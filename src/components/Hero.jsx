@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import './Hero.css'
+import { useRef } from 'react'
+import styles from './Hero.module.css'
 
 function Hero() {
   const subtitleVideoRef = useRef(null)
@@ -15,10 +15,10 @@ function Hero() {
   }
 
   return (
-    <section className="hero">
-      <div className="hero-videos">
+    <section className={styles.hero}>
+      <div className={styles.heroVideos}>
         <video
-          className="hero-video"
+          className={styles.heroVideo}
           muted
           playsInline
           onCanPlayThrough={handleNameVideoReady}
@@ -29,7 +29,7 @@ function Hero() {
 
         <video
           ref={subtitleVideoRef}
-          className={`hero-video`}
+          className={styles.heroVideo}
           muted
           playsInline
           loop
