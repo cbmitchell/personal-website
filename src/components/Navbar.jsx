@@ -9,6 +9,7 @@ function Navbar() {
         <li><Link to="/about">About</Link></li>
         <li><Link to="/blog">Blog</Link></li>
         <li><Link to="/projects">Projects</Link></li>
+        <li><Link to="/resume">Resumé</Link></li>
       </ul>
       <div className="nav-socials">
         <a href="https://www.linkedin.com/in/christopher-mitchell-384045222/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
