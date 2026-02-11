@@ -1,11 +1,11 @@
-import { useRef } from 'react'
+import { useRef, SyntheticEvent } from 'react'
 import styles from './Hero.module.css'
 
 function Hero() {
-  const subtitleVideoRef = useRef(null)
+  const subtitleVideoRef = useRef<HTMLVideoElement>(null)
 
-  const handleNameVideoReady = (e) => {
-    e.target.play()
+  const handleNameVideoReady = (e: SyntheticEvent<HTMLVideoElement>) => {
+    e.currentTarget.play()
   }
 
   const handleNameVideoEnded = () => {

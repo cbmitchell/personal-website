@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, FormEvent } from 'react'
 import emailjs from '@emailjs/browser'
 import styles from './Resume.module.css'
 
@@ -6,11 +6,13 @@ const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
 const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
 
-function Resume() {
-  const formRef = useRef(null)
-  const [status, setStatus] = useState('idle') // idle, sending, success, error
+type FormStatus = 'idle' | 'sending' | 'success' | 'error'
 
-  const handleSubmit = async (e) => {
+function Resume() {
+  const formRef = useRef<HTMLFormElement>(null)
+  const [status, setStatus] = useState<FormStatus>('idle')
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setStatus('sending')
 
@@ -18,11 +20,11 @@ function Resume() {
       await emailjs.sendForm(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
-        formRef.current,
+        formRef.current!,
         EMAILJS_PUBLIC_KEY
       )
       setStatus('success')
-      formRef.current.reset()
+      formRef.current?.reset()
     } catch (error) {
       console.error('EmailJS error:', error)
       setStatus('error')
