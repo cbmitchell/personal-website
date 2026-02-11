@@ -1,0 +1,16 @@
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.hero-videos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-video {
+  max-width: 100%;
+}
