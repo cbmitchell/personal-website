@@ -1,8 +1,11 @@
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+
 function Projects() {
   return (
-    <section className="projects">
-      <h1>Projects</h1>
-    </section>
+    <Box component="section">
+      <Typography variant="h1">Projects</Typography>
+    </Box>
   )
 }
 

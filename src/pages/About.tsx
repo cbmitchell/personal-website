@@ -1,8 +1,11 @@
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+
 function About() {
   return (
-    <section className="about">
-      <h1>About</h1>
-    </section>
+    <Box component="section">
+      <Typography variant="h1">About</Typography>
+    </Box>
   )
 }
 

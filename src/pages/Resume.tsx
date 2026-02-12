@@ -1,7 +1,13 @@
 import { useRef, useState, FormEvent } from 'react'
 import emailjs from '@emailjs/browser'
 import { Turnstile } from '@marsidev/react-turnstile'
-import styles from './Resume.module.css'
+import Container from '@mui/material/Container'
+import Typography from '@mui/material/Typography'
+import Box from '@mui/material/Box'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
+import Alert from '@mui/material/Alert'
+import Stack from '@mui/material/Stack'
 
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
@@ -58,67 +64,77 @@ function Resume() {
   }
 
   return (
-    <section className={styles.resume}>
-      <h1>Request My Resumé</h1>
-      <p className={styles.description}>
+    <Container maxWidth="sm" sx={{ py: 4 }}>
+      <Typography variant="h1" gutterBottom>
+        Request My Resumé
+      </Typography>
+      <Typography color="text.secondary" sx={{ mb: 4 }}>
         Interested in learning more about my experience? Fill out the form below
         and I'll send you a copy of my resumé.
-      </p>
+      </Typography>
 
-      <form ref={formRef} onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.field}>
-          <label htmlFor="name">Name</label>
-          <input type="text" id="name" name="name" required />
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor="email">Email</label>
-          <input type="email" id="email" name="email" required />
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor="company">Company (optional)</label>
-          <input type="text" id="company" name="company" />
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor="message">Message (optional)</label>
-          <textarea id="message" name="message" rows={4} />
-        </div>
-
-        <div className={styles.turnstile}>
-          <Turnstile
-            siteKey={TURNSTILE_SITE_KEY}
-            onSuccess={setTurnstileToken}
-            onExpire={() => setTurnstileToken(null)}
-            options={{
-              size: 'flexible',
-              theme: 'dark'
-            }}
+      <Box component="form" ref={formRef} onSubmit={handleSubmit}>
+        <Stack spacing={2.5}>
+          <TextField
+            name="name"
+            label="Name"
+            required
           />
-        </div>
 
-        <button
-          type="submit"
-          className={styles.submitButton}
-          disabled={status === 'sending' || !turnstileToken}
-        >
-          {status === 'sending' ? 'Sending...' : 'Request Resumé'}
-        </button>
+          <TextField
+            name="email"
+            label="Email"
+            type="email"
+            required
+          />
 
-        {status === 'success' && (
-          <p className={styles.successMessage}>
-            Thanks! I'll send my resumé to you shortly.
-          </p>
-        )}
+          <TextField
+            name="company"
+            label="Company (optional)"
+          />
 
-        {status === 'error' && (
-          <p className={styles.errorMessage}>
-            Something went wrong. Please try again or email me directly.
-          </p>
-        )}
-      </form>
-    </section>
+          <TextField
+            name="message"
+            label="Message (optional)"
+            multiline
+            rows={4}
+          />
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', minHeight: 65 }}>
+            <Turnstile
+              siteKey={TURNSTILE_SITE_KEY}
+              onSuccess={setTurnstileToken}
+              onExpire={() => setTurnstileToken(null)}
+              options={{
+                size: 'flexible',
+                theme: 'dark'
+              }}
+            />
+          </Box>
+
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            disabled={status === 'sending' || !turnstileToken}
+          >
+            {status === 'sending' ? 'Sending...' : 'Request Resumé'}
+          </Button>
+
+          {status === 'success' && (
+            <Alert severity="success">
+              Thanks! I'll send my resumé to you shortly.
+            </Alert>
+          )}
+
+          {status === 'error' && (
+            <Alert severity="error">
+              Something went wrong. Please try again or email me directly.
+            </Alert>
+          )}
+        </Stack>
+      </Box>
+    </Container>
   )
 }
 

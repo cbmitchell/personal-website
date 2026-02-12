@@ -1,5 +1,5 @@
 import { useRef, SyntheticEvent } from 'react'
-import styles from './Hero.module.css'
+import Box from '@mui/material/Box'
 
 function Hero() {
   const subtitleVideoRef = useRef<HTMLVideoElement>(null)
@@ -15,29 +15,45 @@ function Hero() {
   }
 
   return (
-    <section className={styles.hero}>
-      <div className={styles.heroVideos}>
-        <video
-          className={styles.heroVideo}
+    <Box
+      component="section"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Box
+          component="video"
+          sx={{ maxWidth: '100%' }}
           muted
           playsInline
           onCanPlayThrough={handleNameVideoReady}
           onEnded={handleNameVideoEnded}
         >
           <source src="/videos/name.mp4" type="video/mp4" />
-        </video>
+        </Box>
 
-        <video
+        <Box
+          component="video"
           ref={subtitleVideoRef}
-          className={styles.heroVideo}
+          sx={{ maxWidth: '100%' }}
           muted
           playsInline
           loop
         >
           <source src="/videos/subtitle.mp4" type="video/mp4" />
-        </video>
-      </div>
-    </section>
+        </Box>
+      </Box>
+    </Box>
   )
 }
 
