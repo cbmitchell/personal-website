@@ -29,28 +29,34 @@ const theme = createTheme({
   typography: {
     fontFamily: 'system-ui, -apple-system, sans-serif',
     h1: {
-      fontSize: '2rem',
+      fontSize: '3rem',
       fontWeight: 600,
+      paddingTop: '1rem',
     },
     h2: {
-      fontSize: '1.75rem',
+      fontSize: '2rem',
       fontWeight: 600,
+      paddingTop: '1rem',
     },
     h3: {
       fontSize: '1.5rem',
       fontWeight: 600,
+      paddingTop: '1rem',
     },
     h4: {
       fontSize: '1.25rem',
       fontWeight: 600,
+      paddingTop: '1rem',
     },
     h5: {
       fontSize: '1.1rem',
       fontWeight: 600,
+      paddingTop: '1rem',
     },
     h6: {
       fontSize: '1rem',
       fontWeight: 600,
+      paddingTop: '1rem',
     },
   },
   components: {
