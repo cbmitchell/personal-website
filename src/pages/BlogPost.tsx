@@ -33,6 +33,7 @@ function BlogPost() {
     return (
       <Box sx={{ maxWidth: 720, mx: 'auto', py: 4, px: 2 }}>
         <Typography>Loading...</Typography>
+        {/* TODO: Make this a spinning loading indicator instead of static text */}
       </Box>
     )
   }

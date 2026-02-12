@@ -2,13 +2,13 @@ import Typography from '@mui/material/Typography'
 import Link from '@mui/material/Link'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
-import type { Components } from '@mdx-js/react'
+import type { MDXComponents } from 'mdx/types'
 
-export const mdxComponents: Components = {
-  h1: (props) => <Typography variant="h2" gutterBottom sx={{ mt: 4 }} {...props} />,
-  h2: (props) => <Typography variant="h3" gutterBottom sx={{ mt: 3 }} {...props} />,
-  h3: (props) => <Typography variant="h4" gutterBottom sx={{ mt: 2 }} {...props} />,
-  p: (props) => <Typography variant="body1" paragraph {...props} />,
+export const mdxComponents: MDXComponents = {
+  h1: (props) => <Typography variant="h2" gutterBottom {...props} />,
+  h2: (props) => <Typography variant="h3" gutterBottom {...props} />,
+  h3: (props) => <Typography variant="h4" gutterBottom {...props} />,
+  p: (props) => <Typography variant="body1" component="p" {...props} />,
   a: (props) => <Link color="primary" {...props} />,
   hr: () => <Divider sx={{ my: 4 }} />,
   pre: (props) => (

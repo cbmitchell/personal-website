@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
-import { mdxComponents } from './MDXComponents'
+import { mdxComponents } from './mdxMapping'
 import type { PostMeta } from '../../types/blog'
 
 interface BlogLayoutProps {

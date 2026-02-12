@@ -10,11 +10,8 @@ function App() {
       <Box
         component="main"
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
+          minHeight: '100vh',
+          pt: 10,
           bgcolor: 'background.default',
           color: 'text.primary',
         }}
