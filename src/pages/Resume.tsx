@@ -8,6 +8,8 @@ import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
 import Stack from '@mui/material/Stack'
+import CircularProgress from '@mui/material/CircularProgress'
+import Snackbar from '@mui/material/Snackbar'
 
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
@@ -25,6 +27,7 @@ type FormStatus = 'idle' | 'sending' | 'success' | 'error'
 function Resume() {
   const formRef = useRef<HTMLFormElement>(null)
   const [status, setStatus] = useState<FormStatus>('idle')
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
   /**
    * TODO: Phase 2 - AWS Infrastructure Migration
    * Currently, we only perform client-side Turnstile validation (checking that a token exists).
@@ -55,6 +58,7 @@ function Resume() {
         EMAILJS_PUBLIC_KEY
       )
       setStatus('success')
+      setSnackbarOpen(true)
       formRef.current?.reset()
       setTurnstileToken(null)
     } catch (error) {
@@ -118,14 +122,12 @@ function Resume() {
             size="large"
             disabled={status === 'sending' || !turnstileToken}
           >
-            {status === 'sending' ? 'Sending...' : 'Request Resumé'}
+            {status === 'sending' ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              'Request Resumé'
+            )}
           </Button>
-
-          {status === 'success' && (
-            <Alert severity="success">
-              Thanks! I'll send my resumé to you shortly.
-            </Alert>
-          )}
 
           {status === 'error' && (
             <Alert severity="error">
@@ -134,6 +136,16 @@ function Resume() {
           )}
         </Stack>
       </Box>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <Alert severity="success" onClose={() => setSnackbarOpen(false)}>
+          Thanks! I'll send my resumé to you shortly.
+        </Alert>
+      </Snackbar>
     </Container>
   )
 }
