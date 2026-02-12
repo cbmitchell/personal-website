@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import { Navbar } from './components'
-import { About, Blog, Home, Projects, Resume } from './pages'
+import { About, Blog, BlogPost, Home, Projects, Resume } from './pages'
 
 function App() {
   return (
@@ -23,6 +23,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/resume" element={<Resume />} />
         </Routes>

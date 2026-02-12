@@ -10,3 +10,18 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+declare module '*.mdx' {
+  import type { ComponentType } from 'react'
+
+  export const frontmatter: {
+    title: string
+    date: string
+    excerpt: string
+    tags: string[]
+    published?: boolean
+  }
+
+  const MDXComponent: ComponentType
+  export default MDXComponent
+}
