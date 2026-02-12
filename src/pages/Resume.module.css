@@ -49,6 +49,7 @@
 .turnstile {
   display: flex;
   justify-content: center;
+  min-height: 65px; /* Reserve space to prevent layout shift while Turnstile loads */
 }
 
 .submitButton {
@@ -62,6 +63,8 @@
   transition: opacity 0.2s;
 }
 
+/* CHRIS -- Consider: 
+Instead of using opacity for these, actually have a different color for disabled. */
 .submitButton:hover {
   opacity: 0.9;
 }

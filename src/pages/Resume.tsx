@@ -91,6 +91,10 @@ function Resume() {
             siteKey={TURNSTILE_SITE_KEY}
             onSuccess={setTurnstileToken}
             onExpire={() => setTurnstileToken(null)}
+            options={{
+              size: 'flexible',
+              theme: 'dark'
+            }}
           />
         </div>
 
