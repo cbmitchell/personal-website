@@ -1,0 +1,51 @@
+# Project Context
+
+## Purpose
+
+- Impress visitors
+- Serve as a portfolio for my past coding projects
+- Give visitors an idea of what I'm like as a person and as a creative
+- Demonstrate my skills as a Software Engineer
+- Give visitors the means to contact me
+
+## Tech Stack
+
+- React 18 + TypeScript
+- Vite for bundling
+- React Router for routing
+- Material UI
+
+## Project Structure
+
+- src/pages/ - Page components
+- src/components/ - Reusable components
+- src/utils/ - Utility functions
+
+## Coding Preferences
+
+- Use functional components with hooks (no class components)
+- TypeScript for all new files
+- Prefer named exports over default exports
+- Keep utilities in separate files under src/utils/
+- Follow existing component patterns for consistency
+- Follow modern best practices whenever possible
+
+## Forms & Security
+
+- Using Cloudflare Turnstile for bot protection
+- Backend API via API Gateway → ECS
+- Rate limiting on both frontend and backend
+
+## Deployment
+
+- Currently just developing locally, but eventually plan on deploying via GitHub Pages
+
+## TODOs
+
+- Blog page
+  - Will keep posts under src/content/blog/ as MDX files
+- About page
+  - Considering merging this with Home page, but not sure yet.
+  - Will have information about me
+- Projects page
+  - A portfolio-like page to show off past projects that I've done
