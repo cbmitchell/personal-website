@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
+import CircularProgress from '@mui/material/CircularProgress'
 import { BlogLayout } from '../components/blog'
 import { getPostBySlug } from '../lib/blog'
 import type { Post } from '../types/blog'
@@ -31,9 +31,8 @@ function BlogPost() {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: 720, mx: 'auto', py: 4, px: 2 }}>
-        <Typography>Loading...</Typography>
-        {/* TODO: Make this a spinning loading indicator instead of static text */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress />
       </Box>
     )
   }
