@@ -1,19 +1,44 @@
 import { useRef, useState, FormEvent } from 'react'
 import emailjs from '@emailjs/browser'
+import { Turnstile } from '@marsidev/react-turnstile'
 import styles from './Resume.module.css'
 
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
 const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
 
+// Use Cloudflare's test key in development (always passes), real key in production
+// See: https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+const TURNSTILE_TEST_KEY = '1x00000000000000000000AA'
+const TURNSTILE_SITE_KEY = import.meta.env.DEV
+  ? TURNSTILE_TEST_KEY
+  : import.meta.env.VITE_TURNSTILE_SITE_KEY
+
 type FormStatus = 'idle' | 'sending' | 'success' | 'error'
 
 function Resume() {
   const formRef = useRef<HTMLFormElement>(null)
   const [status, setStatus] = useState<FormStatus>('idle')
+  /**
+   * TODO: Phase 2 - AWS Infrastructure Migration
+   * Currently, we only perform client-side Turnstile validation (checking that a token exists).
+   * The Turnstile widget itself provides bot protection through its challenge mechanism.
+   *
+   * For full security, the token should be validated server-side by sending it to
+   * Cloudflare's siteverify API with our secret key. This will be implemented when
+   * we migrate to AWS infrastructure (Lambda + API Gateway).
+   *
+   * See: https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
+   */
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if (!turnstileToken) {
+      return
+    }
+
     setStatus('sending')
 
     try {
@@ -25,6 +50,7 @@ function Resume() {
       )
       setStatus('success')
       formRef.current?.reset()
+      setTurnstileToken(null)
     } catch (error) {
       console.error('EmailJS error:', error)
       setStatus('error')
@@ -60,10 +86,18 @@ function Resume() {
           <textarea id="message" name="message" rows={4} />
         </div>
 
+        <div className={styles.turnstile}>
+          <Turnstile
+            siteKey={TURNSTILE_SITE_KEY}
+            onSuccess={setTurnstileToken}
+            onExpire={() => setTurnstileToken(null)}
+          />
+        </div>
+
         <button
           type="submit"
           className={styles.submitButton}
-          disabled={status === 'sending'}
+          disabled={status === 'sending' || !turnstileToken}
         >
           {status === 'sending' ? 'Sending...' : 'Request Resumé'}
         </button>
