@@ -1,10 +1,10 @@
 import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
+import UnderConstruction from '../components/UnderConstruction'
 
 function Projects() {
   return (
     <Box component="section">
-      <Typography variant="h1">Projects</Typography>
+      <UnderConstruction />
     </Box>
   )
 }
