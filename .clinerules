@@ -13,7 +13,7 @@
 - React 18 + TypeScript
 - Vite for bundling
 - React Router for routing
-- Material UI
+- Material UI with custom theme (defined in `theme.ts`)
 
 ## Project Structure
 
@@ -33,8 +33,6 @@
 ## Forms & Security
 
 - Using Cloudflare Turnstile for bot protection
-- Backend API via API Gateway → ECS
-- Rate limiting on both frontend and backend
 
 ## Deployment
 
@@ -42,10 +40,11 @@
 
 ## TODOs
 
-- Blog page
-  - Will keep posts under src/content/blog/ as MDX files
 - About page
   - Considering merging this with Home page, but not sure yet.
   - Will have information about me
 - Projects page
   - A portfolio-like page to show off past projects that I've done
+- Resumé page
+  - Rate limiting based on IP to prevent repeated submissions from a single source
+    - Will likely require backend logic, which currently doesn't exist. Will revisit this item once it does
