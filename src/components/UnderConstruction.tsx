@@ -29,15 +29,23 @@ function UnderConstruction() {
       }}
     >
       <Box
-        component="img"
-        src={`/images/under_construction/${randomImage}`}
-        alt="Under construction"
         sx={{
           maxWidth: '300px',
           width: '100%',
-          height: 'auto',
+          aspectRatio: '1 / 1',
         }}
-      />
+      >
+        <Box
+          component="img"
+          src={`/images/under_construction/${randomImage}`}
+          alt="Under construction"
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+          }}
+        />
+      </Box>
       <Typography variant="h2" textAlign="center">
         Under Construction
       </Typography>
