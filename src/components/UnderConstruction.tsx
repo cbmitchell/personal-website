@@ -2,14 +2,10 @@ import { useMemo } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
-const images = [
-  'green_man_hammer.png',
-  'green_man_mopping.png',
-  'green_man_scientist.png',
-  'green_man_shrug.png',
-  'green_man_welder.png',
-  'green_man_wrench.png',
-]
+const imageModules = import.meta.glob('/public/images/under_construction/*.png')
+const images = Object.keys(imageModules).map((path) =>
+  path.replace('/public/images/under_construction', '')
+)
 
 function UnderConstruction() {
   const randomImage = useMemo(() => {
