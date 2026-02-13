@@ -35,7 +35,6 @@ function Hero() {
     }
 
     const nextVideo = getRandomVideo(available)
-    console.log(nextVideo)
     setCurrentVideo(nextVideo)
   }, [playedVideos, currentVideo])
 
