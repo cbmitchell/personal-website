@@ -62,7 +62,6 @@ function Resume() {
       formRef.current?.reset()
       setTurnstileToken(null)
     } catch (error) {
-      console.error('EmailJS error:', error)
       setStatus('error')
     }
   }
