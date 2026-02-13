@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import { Navbar } from './components'
 import { About, Blog, BlogPost, Home, Projects, Resume } from './pages'
@@ -23,6 +23,7 @@ function App() {
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/resume" element={<Resume />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
     </Box>
