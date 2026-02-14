@@ -19,14 +19,20 @@ function BlogPost() {
       return
     }
 
-    getPostBySlug(slug).then((data) => {
-      if (data) {
-        setPost(data)
-      } else {
+    getPostBySlug(slug)
+      .then((data) => {
+        if (data) {
+          setPost(data)
+        } else {
+          setNotFound(true)
+        }
+      })
+      .catch(() => {
         setNotFound(true)
-      }
-      setLoading(false)
-    })
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }, [slug])
 
   if (loading) {
