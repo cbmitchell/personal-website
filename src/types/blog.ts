@@ -6,11 +6,11 @@ export interface PostFrontmatter {
   excerpt: string
   tags: string[]
   published?: boolean
+  readingTime?: string
 }
 
 export interface PostMeta extends PostFrontmatter {
   slug: string
-  readingTime: string
 }
 
 export interface Post extends PostMeta {

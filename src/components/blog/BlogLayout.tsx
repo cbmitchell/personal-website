@@ -29,9 +29,11 @@ export function BlogLayout({ meta, children }: BlogLayoutProps) {
           <Typography variant="body2" color="text.secondary">
             {formattedDate}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {meta.readingTime}
-          </Typography>
+          {meta.readingTime && (
+            <Typography variant="body2" color="text.secondary">
+              {meta.readingTime}
+            </Typography>
+          )}
         </Stack>
 
         <Stack direction="row" spacing={1} sx={{ mb: 4 }}>

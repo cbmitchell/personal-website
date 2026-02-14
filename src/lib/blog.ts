@@ -6,13 +6,6 @@ interface MDXModule {
   default: ComponentType
 }
 
-// Simple reading time calculation (200 words per minute)
-function calculateReadingTime(text: string): string {
-  const words = text.trim().split(/\s+/).length
-  const minutes = Math.max(1, Math.ceil(words / 200))
-  return `${minutes} min read`
-}
-
 // Get all posts with metadata (for listing page)
 export function getAllPosts(): PostMeta[] {
   const modules = import.meta.glob<MDXModule>('../content/blog/*.mdx', {
@@ -21,12 +14,10 @@ export function getAllPosts(): PostMeta[] {
 
   const posts: PostMeta[] = Object.entries(modules).map(([path, module]) => {
     const slug = path.split('/').pop()?.replace('.mdx', '') ?? ''
-    const { frontmatter } = module
 
     return {
-      ...frontmatter,
+      ...module.frontmatter,
       slug,
-      readingTime: calculateReadingTime(frontmatter.excerpt || ''),
     }
   })
 
@@ -49,7 +40,6 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   return {
     ...module.frontmatter,
     slug,
-    readingTime: calculateReadingTime(module.frontmatter.excerpt || ''),
     Content: module.default,
   }
 }

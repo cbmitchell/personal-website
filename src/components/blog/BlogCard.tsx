@@ -30,9 +30,11 @@ export function BlogCard({ post }: BlogCardProps) {
             <Typography variant="caption" color="text.secondary">
               {formattedDate}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {post.readingTime}
-            </Typography>
+            {post.readingTime && (
+              <Typography variant="caption" color="text.secondary">
+                {post.readingTime}
+              </Typography>
+            )}
           </Stack>
 
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
