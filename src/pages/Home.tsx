@@ -3,7 +3,7 @@ import { Hero } from '../components'
 
 function Home() {
   return (
-    <Box sx={{ mt: -10 }}>
+    <Box sx={{ mt: { xs: 0, md: -10 } }}>
       <Hero />
     </Box>
   )
