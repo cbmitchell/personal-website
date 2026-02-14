@@ -6,10 +6,6 @@ import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
 import rehypePrettyCode from 'rehype-pretty-code'
 
 export default defineConfig({
-  // NOTE: The below line is just for initial testing.
-  //  Once the site is hosted on the custom domain, this must be removed.
-  base: '/personal-website/',
-
   plugins: [
     {
       enforce: 'pre',
