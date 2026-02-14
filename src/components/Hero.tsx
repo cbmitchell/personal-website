@@ -8,12 +8,17 @@ const subtitleVideos = Object.keys(videoModules).map((path) =>
   path.replace('/public/', base)
 )
 
+// Module-level flag so the name video's completion persists across
+// mount/unmount cycles (route changes) without prop drilling or context.
+let nameVideoFinished = false
+
 function getRandomVideo(available: string[]): string {
   const index = Math.floor(Math.random() * available.length)
   return available[index]
 }
 
 function Hero() {
+  const nameVideoRef = useRef<HTMLVideoElement>(null)
   const subtitleVideoRef = useRef<HTMLVideoElement>(null)
   const [playedVideos, setPlayedVideos] = useState<string[]>([])
   const [currentVideo, setCurrentVideo] = useState(() =>
@@ -46,11 +51,36 @@ function Hero() {
   }, [playedVideos, currentVideo])
 
   const handleNameVideoEnded = () => {
+    nameVideoFinished = true
     subtitlesStarted.current = true
     if (subtitleVideoRef.current) {
       subtitleVideoRef.current.play()
     }
   }
+
+  useEffect(() => {
+    if (!nameVideoFinished) return
+
+    const nameVideo = nameVideoRef.current
+    if (nameVideo) {
+      const seekToEnd = () => {
+        // Seek to just before the end; some mobile browsers won't render
+        // a frame at exactly duration.
+        nameVideo.currentTime = Math.max(0, nameVideo.duration - 0.01)
+      }
+      if (nameVideo.readyState >= 1) {
+        seekToEnd()
+      } else {
+        nameVideo.addEventListener('loadedmetadata', seekToEnd, { once: true })
+        nameVideo.load()
+      }
+    }
+
+    subtitlesStarted.current = true
+    if (subtitleVideoRef.current) {
+      subtitleVideoRef.current.play()
+    }
+  }, [])
 
   const handleSubtitleVideoEnded = () => {
     playNextVideo()
@@ -75,8 +105,10 @@ function Hero() {
       >
         <Box
           component="video"
+          ref={nameVideoRef}
           sx={{ maxWidth: '100%' }}
-          autoPlay
+          autoPlay={!nameVideoFinished}
+          preload={nameVideoFinished ? 'auto' : undefined}
           muted
           playsInline
           onEnded={handleNameVideoEnded}
