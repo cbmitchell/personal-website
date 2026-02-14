@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography'
 const base = import.meta.env.BASE_URL
 const imageModules = import.meta.glob('/public/images/under_construction/*.png')
 const images = Object.keys(imageModules).map((path) =>
-  path.replace('/public/images/under_construction', '')
+  path.replace('/public/', '')
 )
 
 function UnderConstruction() {
@@ -34,7 +34,7 @@ function UnderConstruction() {
       >
         <Box
           component="img"
-          src={`${base}images/under_construction/${randomImage}`}
+          src={`${base}${randomImage}`}
           alt="Under construction"
           sx={{
             width: '100%',
