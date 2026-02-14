@@ -93,7 +93,7 @@ function Hero() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
+        minHeight: '100dvh',
       }}
     >
       <Box

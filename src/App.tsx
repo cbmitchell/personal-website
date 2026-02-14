@@ -5,12 +5,12 @@ import { About, Blog, BlogPost, Home, Projects, Resume } from './pages'
 
 function App() {
   return (
-    <Box sx={{ minHeight: '100vh' }}>
+    <Box sx={{ minHeight: '100dvh' }}>
       <Navbar />
       <Box
         component="main"
         sx={{
-          minHeight: '100vh',
+          minHeight: '100dvh',
           pt: { xs: 0, md: 10 },
           bgcolor: 'background.default',
           color: 'text.primary',
