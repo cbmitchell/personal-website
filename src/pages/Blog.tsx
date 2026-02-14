@@ -9,10 +9,6 @@ function Blog() {
 
   return (
     <Box component="section" sx={{ maxWidth: 720, mx: 'auto', py: 4, px: 2 }}>
-      <Typography variant="h1" gutterBottom>
-        Blog
-      </Typography>
-
       <Stack spacing={3}>
         {posts.map((post) => (
           <BlogCard key={post.slug} post={post} />

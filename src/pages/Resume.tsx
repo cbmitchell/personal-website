@@ -68,7 +68,7 @@ function Resume() {
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Typography variant="h1" gutterBottom>
+      <Typography variant="h3" gutterBottom>
         Request My Resumé
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 4 }}>
