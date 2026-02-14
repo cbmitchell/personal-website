@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack'
 import { BlogCard } from '../components/blog'
 import { getAllPosts } from '../lib/blog'
 
-function Blog() {
+export function Blog() {
   const posts = getAllPosts()
 
   return (
@@ -24,4 +24,3 @@ function Blog() {
   )
 }
 
-export default Blog

@@ -17,10 +17,10 @@ function getRandomVideo(available: string[]): string {
   return available[index]
 }
 
-function Hero() {
+export function Hero() {
   const nameVideoRef = useRef<HTMLVideoElement>(null)
   const subtitleVideoRef = useRef<HTMLVideoElement>(null)
-  const [playedVideos, setPlayedVideos] = useState<string[]>([])
+  const playedRef = useRef<string[]>([])
   const [currentVideo, setCurrentVideo] = useState(() =>
     getRandomVideo(subtitleVideos)
   )
@@ -33,22 +33,23 @@ function Hero() {
   }, [currentVideo])
 
   const playNextVideo = useCallback(() => {
-    const newPlayedVideos = [...playedVideos, currentVideo]
+    setCurrentVideo((prevVideo) => {
+      const newPlayed = [...playedRef.current, prevVideo]
 
-    // Get videos that haven't been played yet
-    let available = subtitleVideos.filter((v) => !newPlayedVideos.includes(v))
+      // Reset once all videos have been played
+      if (newPlayed.length >= subtitleVideos.length) {
+        playedRef.current = []
+      } else {
+        playedRef.current = newPlayed
+      }
 
-    // If all videos have been played, reset the list
-    if (available.length === 0) {
-      available = subtitleVideos
-      setPlayedVideos([])
-    } else {
-      setPlayedVideos(newPlayedVideos)
-    }
+      // Get videos that haven't been played yet
+      let available = subtitleVideos.filter((v) => !newPlayed.includes(v))
+      if (available.length === 0) available = subtitleVideos
 
-    const nextVideo = getRandomVideo(available)
-    setCurrentVideo(nextVideo)
-  }, [playedVideos, currentVideo])
+      return getRandomVideo(available)
+    })
+  }, [])
 
   const handleNameVideoEnded = () => {
     nameVideoFinished = true
@@ -140,4 +141,3 @@ function Hero() {
   )
 }
 
-export default Hero

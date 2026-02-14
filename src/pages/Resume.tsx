@@ -24,7 +24,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.DEV
 
 type FormStatus = 'idle' | 'sending' | 'success' | 'error'
 
-function Resume() {
+export function Resume() {
   const formRef = useRef<HTMLFormElement>(null)
   const [status, setStatus] = useState<FormStatus>('idle')
   const [snackbarOpen, setSnackbarOpen] = useState(false)
@@ -149,4 +149,3 @@ function Resume() {
   )
 }
 
-export default Resume

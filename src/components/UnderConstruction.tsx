@@ -8,7 +8,7 @@ const images = Object.keys(imageModules).map((path) =>
   path.replace('/public/', '')
 )
 
-function UnderConstruction() {
+export function UnderConstruction() {
   const randomImage = useMemo(() => {
     const index = Math.floor(Math.random() * images.length)
     return images[index]
@@ -53,5 +53,3 @@ function UnderConstruction() {
     </Box>
   )
 }
-
-export default UnderConstruction

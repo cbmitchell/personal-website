@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box'
-import UnderConstruction from '../components/UnderConstruction'
+import { UnderConstruction } from '../components/UnderConstruction'
 
-function About() {
+export function About() {
   return (
     <Box component="section">
       <UnderConstruction />
@@ -9,4 +9,3 @@ function About() {
   )
 }
 
-export default About

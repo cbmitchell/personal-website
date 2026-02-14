@@ -12,9 +12,7 @@ import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import Divider from '@mui/material/Divider'
 import MenuIcon from '@mui/icons-material/Menu'
-import LinkedInIcon from '@mui/icons-material/LinkedIn'
-import GitHubIcon from '@mui/icons-material/GitHub'
-import EmailIcon from '@mui/icons-material/Email'
+import { SocialLinks } from './SocialLinks'
 
 const navLinks = [
   { label: 'Home', to: '/' },
@@ -24,7 +22,7 @@ const navLinks = [
   { label: 'Resumé', to: '/resume' },
 ]
 
-function Navbar() {
+export function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
@@ -39,36 +37,7 @@ function Navbar() {
               </Button>
             ))}
           </Box>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <IconButton
-              component="a"
-              href="https://www.linkedin.com/in/christopher-mitchell-384045222/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              color="inherit"
-            >
-              <LinkedInIcon />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="https://github.com/cbmitchell"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub"
-              color="inherit"
-            >
-              <GitHubIcon />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="mailto:chrisbeckermitchell@gmail.com"
-              aria-label="Email"
-              color="inherit"
-            >
-              <EmailIcon />
-            </IconButton>
-          </Box>
+          <SocialLinks color="inherit" />
         </Toolbar>
       </AppBar>
 
@@ -109,37 +78,9 @@ function Navbar() {
             ))}
           </List>
           <Divider />
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, py: 2 }}>
-            <IconButton
-              component="a"
-              href="https://www.linkedin.com/in/christopher-mitchell-384045222/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-            >
-              <LinkedInIcon />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="https://github.com/cbmitchell"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub"
-            >
-              <GitHubIcon />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="mailto:chrisbeckermitchell@gmail.com"
-              aria-label="Email"
-            >
-              <EmailIcon />
-            </IconButton>
-          </Box>
+          <SocialLinks sx={{ justifyContent: 'center', py: 2 }} />
         </Box>
       </Drawer>
     </>
   )
 }
-
-export default Navbar

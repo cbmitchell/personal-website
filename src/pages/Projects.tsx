@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box'
-import UnderConstruction from '../components/UnderConstruction'
+import { UnderConstruction } from '../components/UnderConstruction'
 
-function Projects() {
+export function Projects() {
   return (
     <Box component="section">
       <UnderConstruction />
@@ -9,4 +9,3 @@ function Projects() {
   )
 }
 
-export default Projects

@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import { Navbar } from './components'
 import { About, Blog, BlogPost, Home, Projects, Resume } from './pages'
 
-function App() {
+export function App() {
   return (
     <Box sx={{ minHeight: '100dvh' }}>
       <Navbar />
@@ -30,4 +30,3 @@ function App() {
   )
 }
 
-export default App

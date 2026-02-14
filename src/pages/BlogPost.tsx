@@ -6,7 +6,7 @@ import { BlogLayout } from '../components/blog'
 import { getPostBySlug } from '../lib/blog'
 import type { Post } from '../types/blog'
 
-function BlogPost() {
+export function BlogPost() {
   const { slug } = useParams<{ slug: string }>()
   const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,4 +56,3 @@ function BlogPost() {
   )
 }
 
-export default BlogPost
