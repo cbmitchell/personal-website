@@ -3,8 +3,9 @@ import Box from '@mui/material/Box'
 
 // Automatically discover all videos in public/videos/subtitles/
 const videoModules = import.meta.glob('/public/videos/subtitles/*.mp4')
+const base = import.meta.env.BASE_URL
 const subtitleVideos = Object.keys(videoModules).map((path) =>
-  path.replace('/public', '')
+  path.replace('/public/', base)
 )
 
 function getRandomVideo(available: string[]): string {
@@ -85,7 +86,7 @@ function Hero() {
           onCanPlayThrough={handleNameVideoReady}
           onEnded={handleNameVideoEnded}
         >
-          <source src="/videos/name.mp4" type="video/mp4" />
+          <source src={`${base}videos/name.mp4`} type="video/mp4" />
         </Box>
 
         <Box

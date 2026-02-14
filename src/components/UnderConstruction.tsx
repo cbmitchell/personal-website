@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
+const base = import.meta.env.BASE_URL
 const imageModules = import.meta.glob('/public/images/under_construction/*.png')
 const images = Object.keys(imageModules).map((path) =>
   path.replace('/public/images/under_construction', '')
@@ -33,7 +34,7 @@ function UnderConstruction() {
       >
         <Box
           component="img"
-          src={`/images/under_construction/${randomImage}`}
+          src={`${base}images/under_construction/${randomImage}`}
           alt="Under construction"
           sx={{
             width: '100%',
