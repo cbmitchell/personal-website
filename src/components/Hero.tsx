@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, SyntheticEvent } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 import Box from '@mui/material/Box'
 
 // Automatically discover all videos in public/videos/subtitles/
@@ -19,7 +19,13 @@ function Hero() {
   const [currentVideo, setCurrentVideo] = useState(() =>
     getRandomVideo(subtitleVideos)
   )
-  const [nameVideoEnded, setNameVideoEnded] = useState(false)
+  const subtitlesStarted = useRef(false)
+
+  useEffect(() => {
+    if (subtitlesStarted.current && subtitleVideoRef.current) {
+      subtitleVideoRef.current.play()
+    }
+  }, [currentVideo])
 
   const playNextVideo = useCallback(() => {
     const newPlayedVideos = [...playedVideos, currentVideo]
@@ -39,21 +45,10 @@ function Hero() {
     setCurrentVideo(nextVideo)
   }, [playedVideos, currentVideo])
 
-  const handleNameVideoReady = (e: SyntheticEvent<HTMLVideoElement>) => {
-    e.currentTarget.play()
-  }
-
   const handleNameVideoEnded = () => {
-    setNameVideoEnded(true)
+    subtitlesStarted.current = true
     if (subtitleVideoRef.current) {
       subtitleVideoRef.current.play()
-    }
-  }
-
-  const handleSubtitleVideoReady = (e: SyntheticEvent<HTMLVideoElement>) => {
-    // Auto-play subsequent videos after the name video has finished
-    if (nameVideoEnded) {
-      e.currentTarget.play()
     }
   }
 
@@ -81,9 +76,9 @@ function Hero() {
         <Box
           component="video"
           sx={{ maxWidth: '100%' }}
+          autoPlay
           muted
           playsInline
-          onCanPlayThrough={handleNameVideoReady}
           onEnded={handleNameVideoEnded}
         >
           <source src={`${base}videos/name.mp4`} type="video/mp4" />
@@ -103,7 +98,6 @@ function Hero() {
             sx={{ width: '100%', height: '100%' }}
             muted
             playsInline
-            onCanPlayThrough={handleSubtitleVideoReady}
             onEnded={handleSubtitleVideoEnded}
           >
             <source src={currentVideo} type="video/mp4" />
