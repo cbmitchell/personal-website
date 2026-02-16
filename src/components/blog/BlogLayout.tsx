@@ -1,4 +1,5 @@
 import { MDXProvider } from '@mdx-js/react'
+import 'rehype-callouts/theme/github'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
@@ -20,7 +21,7 @@ export function BlogLayout({ meta, children }: BlogLayoutProps) {
 
   return (
     <MDXProvider components={mdxComponents}>
-      <Box sx={{ maxWidth: 720, mx: 'auto', py: 4, px: 2 }}>
+      <Box className="dark" sx={{ maxWidth: 720, mx: 'auto', py: 4, px: 2 }}>
         <Typography variant="h1" gutterBottom>
           {meta.title}
         </Typography>
