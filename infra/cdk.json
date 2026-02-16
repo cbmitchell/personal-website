@@ -1,0 +1,8 @@
+{
+  "app": "npx ts-node bin/infra.ts",
+  "context": {
+    "senderEmail": "noreply@chrisbeckermitchell.com",
+    "recipientEmail": "chrisbeckermitchell@gmail.com",
+    "allowedOrigins": ["https://chrisbeckermitchell.com"]
+  }
+}
