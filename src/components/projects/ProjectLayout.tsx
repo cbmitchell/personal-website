@@ -43,7 +43,7 @@ export function ProjectLayout({ meta, children }: ProjectLayoutProps) {
               variant="outlined"
               size="small"
             >
-              Live Demo
+              Live Deployment
             </Button>
           )}
         </Stack>
@@ -59,8 +59,8 @@ export function ProjectLayout({ meta, children }: ProjectLayoutProps) {
         {children}
 
         {meta.showDemo && meta.deploymentUrl && (
-          <Box sx={{ mt: 6 }}>
-            <Typography variant="h5" gutterBottom>
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h3" gutterBottom>
               Demo
             </Typography>
             <Box
@@ -69,10 +69,11 @@ export function ProjectLayout({ meta, children }: ProjectLayoutProps) {
               title={`${meta.title} demo`}
               sx={{
                 width: '100%',
-                height: 500,
+                height: 640,
                 border: 1,
                 borderColor: 'divider',
                 borderRadius: 1,
+                bgcolor: 'white',
               }}
             />
           </Box>
