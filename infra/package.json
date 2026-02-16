@@ -1,0 +1,24 @@
+{
+  "name": "personal-site-infra",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy",
+    "diff": "cdk diff"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.175.0",
+    "constructs": "^10.4.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.0.0",
+    "@aws-sdk/client-sesv2": "^3.0.0",
+    "@types/aws-lambda": "^8.10.0",
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

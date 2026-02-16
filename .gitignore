@@ -3,6 +3,7 @@
 
 node_modules/
 dist/
+cdk.out/
 
 # Environment variables
 .env

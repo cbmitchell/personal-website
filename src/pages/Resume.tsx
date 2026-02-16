@@ -1,5 +1,4 @@
 import { useRef, useState, FormEvent } from 'react'
-import emailjs from '@emailjs/browser'
 import { Turnstile } from '@marsidev/react-turnstile'
 import Container from '@mui/material/Container'
 import Typography from '@mui/material/Typography'
@@ -11,9 +10,7 @@ import Stack from '@mui/material/Stack'
 import CircularProgress from '@mui/material/CircularProgress'
 import Snackbar from '@mui/material/Snackbar'
 
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
-const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+const CONTACT_API_URL = import.meta.env.VITE_CONTACT_API_URL
 
 // Use Cloudflare's test key in development (always passes), real key in production
 // See: https://developers.cloudflare.com/turnstile/troubleshooting/testing/
@@ -28,17 +25,6 @@ export function Resume() {
   const formRef = useRef<HTMLFormElement>(null)
   const [status, setStatus] = useState<FormStatus>('idle')
   const [snackbarOpen, setSnackbarOpen] = useState(false)
-  /**
-   * TODO: Phase 2 - AWS Infrastructure Migration
-   * Currently, we only perform client-side Turnstile validation (checking that a token exists).
-   * The Turnstile widget itself provides bot protection through its challenge mechanism.
-   *
-   * For full security, the token should be validated server-side by sending it to
-   * Cloudflare's siteverify API with our secret key. This will be implemented when
-   * we migrate to AWS infrastructure (Lambda + API Gateway).
-   *
-   * See: https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
-   */
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -51,12 +37,21 @@ export function Resume() {
     setStatus('sending')
 
     try {
-      await emailjs.sendForm(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        formRef.current!,
-        EMAILJS_PUBLIC_KEY
-      )
+      const formData = new FormData(formRef.current!)
+      const response = await fetch(`${CONTACT_API_URL}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.get('name'),
+          email: formData.get('email'),
+          company: formData.get('company') || undefined,
+          message: formData.get('message') || undefined,
+          turnstileToken,
+        }),
+      })
+
+      if (!response.ok) throw new Error('Request failed')
+
       setStatus('success')
       setSnackbarOpen(true)
       formRef.current?.reset()
