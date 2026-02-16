@@ -63,4 +63,41 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
+  del: (props) => (
+    <Typography component="del" sx={{ textDecoration: 'line-through' }} {...props} />
+  ),
+  table: (props) => (
+    <Box
+      component="table"
+      sx={{
+        width: '100%',
+        borderCollapse: 'collapse',
+        my: 2,
+        '& th, & td': {
+          border: 1,
+          borderColor: 'divider',
+          px: 2,
+          py: 1,
+        },
+      }}
+      {...props}
+    />
+  ),
+  th: (props) => (
+    <Typography
+      component="th"
+      variant="body1"
+      sx={{ fontWeight: 'bold', textAlign: 'left' }}
+      {...props}
+    />
+  ),
+  td: (props) => (
+    <Typography component="td" variant="body1" {...props} />
+  ),
+  input: (props) => {
+    if (props.type === 'checkbox') {
+      return <Box component="input" type="checkbox" disabled={props.disabled} checked={props.checked} readOnly sx={{ mr: 1 }} />
+    }
+    return <input {...props} />
+  },
 }
