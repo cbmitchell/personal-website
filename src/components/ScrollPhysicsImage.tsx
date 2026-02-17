@@ -1,10 +1,17 @@
-import { useRef, type CSSProperties, type MutableRefObject } from 'react';
+import { useRef, useMemo, type CSSProperties, type MutableRefObject, type RefObject } from 'react';
 import { useScrollPhysics } from '../hooks/useScrollPhysics';
 import type { ScrollPhysicsElement, ScrollPhysicsOptions } from '../lib/ScrollPhysicsElement';
 
 export interface ScrollPhysicsImageProps extends ScrollPhysicsOptions {
   /** Pixel width/height of the <img> (default 512). */
   size?: number;
+  /**
+   * Ref to a scrollable container element. When provided, the physics engine
+   * reads scrollTop from this element instead of window.pageYOffset.
+   * This avoids mobile Safari issues where browser chrome resizing shifts
+   * the window scroll position.
+   */
+  scrollContainerRef?: RefObject<HTMLElement | null>;
   /** Extra class name on the outer wrapper. */
   className?: string;
   /** Extra inline styles on the outer wrapper. */
@@ -15,6 +22,7 @@ export interface ScrollPhysicsImageProps extends ScrollPhysicsOptions {
 
 export function ScrollPhysicsImage({
   size = 512,
+  scrollContainerRef,
   className,
   style,
   instanceRef: externalRef,
@@ -22,7 +30,15 @@ export function ScrollPhysicsImage({
 }: ScrollPhysicsImageProps) {
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const physicsRef = useScrollPhysics(imgRef, physicsOptions);
+  const getScrollPosition = useMemo(() => {
+    if (!scrollContainerRef) return undefined;
+    return () => scrollContainerRef.current?.scrollTop ?? 0;
+  }, [scrollContainerRef]);
+
+  const physicsRef = useScrollPhysics(imgRef, {
+    ...physicsOptions,
+    getScrollPosition,
+  });
 
   // Expose the instance to the parent if they passed a ref
   if (externalRef) {

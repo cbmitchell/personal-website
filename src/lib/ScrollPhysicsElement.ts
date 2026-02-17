@@ -26,7 +26,14 @@ export type ThresholdMode = 'linear' | 'exponential';
 
 type AnchorState = 'none' | 'upper' | 'lower' | 'following';
 
+/** Returns the current scroll position in pixels. */
+export type ScrollPositionProvider = () => number;
+
 export interface ScrollPhysicsOptions {
+  // Scroll position source
+  /** Custom scroll position provider. Defaults to () => window.pageYOffset. */
+  getScrollPosition?: ScrollPositionProvider;
+
   // Physics
   responsiveness?: number;
   mass?: number;
@@ -73,7 +80,9 @@ export interface FrameNames {
 // Default configuration
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DEFAULTS: Required<ScrollPhysicsOptions> = {
+const DEFAULT_GET_SCROLL_POSITION: ScrollPositionProvider = () => window.pageYOffset;
+
+const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
   // Physics
   responsiveness: 0.2,
   mass: 1,
@@ -91,7 +100,7 @@ const DEFAULTS: Required<ScrollPhysicsOptions> = {
 
   // Frames
   numFrames: 10,
-  frameEasingSpeed: 0.20,
+  frameEasingSpeed: 0.15,
 
   // Images
   imagePath: '../../public/images/physics_animation_frames/',
@@ -118,6 +127,9 @@ export class ScrollPhysicsElement {
   // DOM
   private element: HTMLImageElement;
   private container: HTMLElement | null;
+
+  // Scroll position source
+  private getScrollPosition: ScrollPositionProvider;
 
   // Physics state
   private lastScrollTop: number;
@@ -178,13 +190,17 @@ export class ScrollPhysicsElement {
     this.element = element;
     this.container = element.parentElement;
 
+    const { getScrollPosition, ...rest } = options;
     const defined = Object.fromEntries(
-      Object.entries(options).filter(([, v]) => v !== undefined),
+      Object.entries(rest).filter(([, v]) => v !== undefined),
     );
-    const cfg = { ...DEFAULTS, ...defined } as Required<ScrollPhysicsOptions>;
+    const cfg = { ...DEFAULTS, ...defined } as Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>>;
+
+    // Scroll position source
+    this.getScrollPosition = getScrollPosition ?? DEFAULT_GET_SCROLL_POSITION;
 
     // Physics state
-    this.lastScrollTop = window.pageYOffset;
+    this.lastScrollTop = this.getScrollPosition();
     this.lastTime = performance.now();
     this.scrollVelocity = 0;
     this.smoothedVelocity = 0;
@@ -377,7 +393,7 @@ export class ScrollPhysicsElement {
 
   private animate(): void {
     const now = performance.now();
-    const scrollTop = window.pageYOffset;
+    const scrollTop = this.getScrollPosition();
     const dt = (now - this.lastTime) / 1000;
 
     if (this.anchorEnabled) {
@@ -584,6 +600,9 @@ export class ScrollPhysicsElement {
       this.container.style.top = this.anchorVerticalOffset + '%';
     }
   }
+
+  // Scroll position source
+  setGetScrollPosition(fn: ScrollPositionProvider): void { this.getScrollPosition = fn; }
 
   // Splat
   setSplatEnabled(v: boolean): void {

@@ -66,6 +66,9 @@ export function useScrollPhysics(
     if (options.splatEnabled != null)                 p.setSplatEnabled(options.splatEnabled);
     if (options.splatSeverity != null)                p.setSplatSeverity(options.splatSeverity);
     if (options.splatRecoverySpeed != null)            p.setSplatRecoverySpeed(options.splatRecoverySpeed);
+
+    // Scroll position source
+    if (options.getScrollPosition != null)             p.setGetScrollPosition(options.getScrollPosition);
   });
 
   return instanceRef;

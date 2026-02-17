@@ -1,10 +1,19 @@
+import { useRef } from 'react'
 import Box from '@mui/material/Box'
 import { UnderConstruction } from '../components/UnderConstruction'
 import { ScrollPhysicsImage } from '../components/ScrollPhysicsImage'
 
 export function About() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
   return (
-    <>
+    <Box
+      ref={scrollContainerRef}
+      sx={{
+        height: '100dvh',
+        overflowY: 'auto',
+      }}
+    >
       <Box
         component="section"
         sx={{
@@ -17,8 +26,8 @@ export function About() {
       <ScrollPhysicsImage
         imagePath="/images/physics_animation_frames/"
         numFrames={10}
+        scrollContainerRef={scrollContainerRef}
       />
-    </>
+    </Box>
   )
 }
-
