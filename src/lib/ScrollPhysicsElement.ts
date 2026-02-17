@@ -1,0 +1,595 @@
+/**
+ * ScrollPhysicsElement
+ *
+ * A scroll-responsive animation engine that swaps image frames based on
+ * real-time scroll velocity and acceleration. Designed to be used standalone
+ * or wrapped by a React hook/component.
+ *
+ * Usage (vanilla):
+ *   const physics = new ScrollPhysicsElement(imgElement, {
+ *     imagePath: '/images/myframes/',
+ *     numFrames: 10,
+ *     responsiveness: 0.3,
+ *   });
+ *   // later:
+ *   physics.destroy();
+ *
+ * All configurable parameters can be passed in the constructor options object
+ * or updated at runtime via setter methods.
+ */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ThresholdMode = 'linear' | 'exponential';
+
+type AnchorState = 'none' | 'upper' | 'lower' | 'following';
+
+export interface ScrollPhysicsOptions {
+  // Physics
+  responsiveness?: number;
+  mass?: number;
+  accelerationWeight?: number;
+  velocityWeight?: number;
+  velocitySmoothingFactor?: number;
+  accelerationSmoothingFactor?: number;
+
+  // Thresholds
+  thresholdMode?: ThresholdMode;
+  baseForceThreshold?: number;
+  forceThresholdMultiplier?: number;
+  maxForceValue?: number;
+  thresholdBuffer?: number;
+
+  // Frames
+  numFrames?: number;
+  frameEasingSpeed?: number;
+
+  // Images
+  imagePath?: string;
+
+  // Anchor system
+  anchorEnabled?: boolean;
+  anchorUpperScrollPosition?: number;
+  anchorLowerScrollPosition?: number;
+  anchorVerticalOffset?: number;
+
+  // Splat animation
+  splatEnabled?: boolean;
+  splatSeverity?: number;
+  splatRecoverySpeed?: number;
+}
+
+export interface FrameNames {
+  upward: string[];
+  neutral: string;
+  downward: string[];
+  upwardSplat: string[];
+  downwardSplat: string[];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Default configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DEFAULTS: Required<ScrollPhysicsOptions> = {
+  // Physics
+  responsiveness: 0.2,
+  mass: 1,
+  accelerationWeight: 1.0,
+  velocityWeight: 0.8,
+  velocitySmoothingFactor: 0.3,
+  accelerationSmoothingFactor: 0.3,
+
+  // Thresholds
+  thresholdMode: 'linear',
+  baseForceThreshold: 1000,
+  forceThresholdMultiplier: 2.5,
+  maxForceValue: 10000,
+  thresholdBuffer: 0.5,
+
+  // Frames
+  numFrames: 10,
+  frameEasingSpeed: 0.20,
+
+  // Images
+  imagePath: '../../public/images/physics_animation_frames/',
+
+  // Anchor system
+  anchorEnabled: true,
+  anchorUpperScrollPosition: 200,
+  anchorLowerScrollPosition: 6000,
+  anchorVerticalOffset: 50,
+
+  // Splat animation
+  splatEnabled: true,
+  splatSeverity: 0.005,
+  splatRecoverySpeed: 0.2,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Class
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DELTA_TIME_MAX = 0.1; // discard frames longer than 100 ms
+
+export class ScrollPhysicsElement {
+  // DOM
+  private element: HTMLImageElement;
+  private container: HTMLElement | null;
+
+  // Physics state
+  private lastScrollTop: number;
+  private lastTime: number;
+  private scrollVelocity: number;
+  private smoothedVelocity: number;
+  private lastSmoothedVelocity: number;
+  private scrollAcceleration: number;
+  private smoothedAcceleration: number;
+  private acceleration: number;
+  private netForce: number;
+
+  // Physics parameters
+  private responsiveness: number;
+  private mass: number;
+  private accelerationWeight: number;
+  private velocityWeight: number;
+  private velocitySmoothingFactor: number;
+  private accelerationSmoothingFactor: number;
+
+  // Threshold configuration
+  private thresholdMode: ThresholdMode;
+  private baseForceThreshold: number;
+  private forceThresholdMultiplier: number;
+  private maxForceValue: number;
+  private thresholdBuffer: number;
+  private forceIntensityLevels: number[];
+
+  // Frame animation
+  private numFrames: number;
+  private frameEasingSpeed: number;
+  private targetFrame: number;
+  private currentDisplayFrame: number;
+  private lastTargetFrame: number;
+  private currentFramePath: string;
+
+  // Images
+  private imagePath: string;
+  private frames: FrameNames;
+
+  // Anchor system
+  private anchorEnabled: boolean;
+  private anchorUpperScrollPosition: number;
+  private anchorLowerScrollPosition: number;
+  private anchorVerticalOffset: number;
+  private anchorState: AnchorState;
+
+  // Splat animation
+  private splatEnabled: boolean;
+  private splatSeverity: number;
+  private splatRecoverySpeed: number;
+  private splatFrame: number;
+
+  // rAF handle
+  private rafId: number | null;
+
+  constructor(element: HTMLImageElement, options: ScrollPhysicsOptions = {}) {
+    this.element = element;
+    this.container = element.parentElement;
+
+    const defined = Object.fromEntries(
+      Object.entries(options).filter(([, v]) => v !== undefined),
+    );
+    const cfg = { ...DEFAULTS, ...defined } as Required<ScrollPhysicsOptions>;
+
+    // Physics state
+    this.lastScrollTop = window.pageYOffset;
+    this.lastTime = performance.now();
+    this.scrollVelocity = 0;
+    this.smoothedVelocity = 0;
+    this.lastSmoothedVelocity = 0;
+    this.scrollAcceleration = 0;
+    this.smoothedAcceleration = 0;
+    this.acceleration = 0;
+    this.netForce = 0;
+
+    // Physics parameters
+    this.responsiveness = cfg.responsiveness;
+    this.mass = cfg.mass;
+    this.accelerationWeight = cfg.accelerationWeight;
+    this.velocityWeight = cfg.velocityWeight;
+    this.velocitySmoothingFactor = cfg.velocitySmoothingFactor;
+    this.accelerationSmoothingFactor = cfg.accelerationSmoothingFactor;
+
+    // Threshold configuration
+    this.thresholdMode = cfg.thresholdMode;
+    this.baseForceThreshold = cfg.baseForceThreshold;
+    this.forceThresholdMultiplier = cfg.forceThresholdMultiplier;
+    this.maxForceValue = cfg.maxForceValue;
+    this.thresholdBuffer = cfg.thresholdBuffer;
+    this.forceIntensityLevels = [];
+
+    // Frame animation
+    this.numFrames = cfg.numFrames;
+    this.frameEasingSpeed = cfg.frameEasingSpeed;
+    this.targetFrame = 0;
+    this.currentDisplayFrame = 0;
+    this.lastTargetFrame = 0;
+    this.currentFramePath = '';
+
+    // Images
+    this.imagePath = cfg.imagePath;
+    this.frames = this.generateFrameNames(this.numFrames);
+
+    // Anchor system
+    this.anchorEnabled = cfg.anchorEnabled;
+    this.anchorUpperScrollPosition = cfg.anchorUpperScrollPosition;
+    this.anchorLowerScrollPosition = cfg.anchorLowerScrollPosition;
+    this.anchorVerticalOffset = cfg.anchorVerticalOffset;
+    this.anchorState = 'none';
+
+    // Splat animation
+    this.splatEnabled = cfg.splatEnabled;
+    this.splatSeverity = cfg.splatSeverity;
+    this.splatRecoverySpeed = cfg.splatRecoverySpeed;
+    this.splatFrame = 0;
+
+    // rAF handle
+    this.rafId = null;
+
+    this.init();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LIFECYCLE
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private init(): void {
+    this.forceIntensityLevels = this.generateForceThresholds();
+    this.currentFramePath = this.imageSrc(this.frames.neutral);
+    this.element.src = this.currentFramePath;
+    this.animate();
+  }
+
+  /** Stop the animation loop. Call this before unmounting. */
+  destroy(): void {
+    if (this.rafId != null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FRAME NAME / PATH HELPERS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private generateFrameNames(count: number): FrameNames {
+    const upward: string[] = [];
+    const downward: string[] = [];
+    const upwardSplat: string[] = [];
+    const downwardSplat: string[] = [];
+    for (let i = 1; i <= count; i++) {
+      upward.push(`upward-${i}.png`);
+      downward.push(`downward-${i}.png`);
+      upwardSplat.push(`up-splat-${i}.png`);
+      downwardSplat.push(`down-splat-${i}.png`);
+    }
+    return { upward, neutral: 'neutral.png', downward, upwardSplat, downwardSplat };
+  }
+
+  private imageSrc(filename: string): string {
+    return this.imagePath + filename;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // THRESHOLD GENERATION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private generateForceThresholds(): number[] {
+    const thresholds: number[] = [];
+
+    if (this.thresholdMode === 'linear') {
+      const spacing = this.maxForceValue / (this.numFrames + 0.5);
+      const first = spacing / 2;
+      for (let i = 0; i < this.numFrames; i++) {
+        thresholds.push(first + i * spacing);
+      }
+    } else {
+      for (let i = 0; i < this.numFrames; i++) {
+        thresholds.push(
+          this.baseForceThreshold * Math.pow(this.forceThresholdMultiplier, i),
+        );
+      }
+    }
+
+    return thresholds;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ANCHOR HELPERS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private anchorVerticalPx(): number {
+    return (this.anchorVerticalOffset / 100) * window.innerHeight;
+  }
+
+  private effectiveScrollTop(currentScrollTop: number): number {
+    if (!this.anchorEnabled) return currentScrollTop;
+    if (this.anchorState === 'upper') return this.anchorUpperScrollPosition;
+    if (this.anchorState === 'lower') return this.anchorLowerScrollPosition;
+    return currentScrollTop;
+  }
+
+  private isAnchored(): boolean {
+    return this.anchorState === 'upper' || this.anchorState === 'lower';
+  }
+
+  private setContainerStyle(position: string, top: string): void {
+    if (!this.container) return;
+    this.container.style.position = position;
+    this.container.style.top = top;
+    this.container.style.left = '50%';
+    this.container.style.transform = 'translate(-50%, -50%)';
+  }
+
+  private determineAnchorState(scrollTop: number): AnchorState {
+    if (scrollTop < this.anchorUpperScrollPosition) return 'upper';
+    if (scrollTop >= this.anchorLowerScrollPosition) return 'lower';
+    return 'following';
+  }
+
+  private updateContainerPosition(scrollTop: number): void {
+    if (!this.container) return;
+
+    const newState = this.determineAnchorState(scrollTop);
+    if (newState === this.anchorState) return;
+
+    const verticalPx = this.anchorVerticalPx();
+
+    if (newState === 'upper') {
+      this.setContainerStyle('absolute', this.anchorUpperScrollPosition + verticalPx + 'px');
+      if (this.splatEnabled) {
+        this.splatFrame = Math.min(
+          Math.round(Math.abs(this.smoothedVelocity) * this.splatSeverity),
+          this.numFrames,
+        );
+      }
+    } else if (newState === 'lower') {
+      this.setContainerStyle('absolute', this.anchorLowerScrollPosition + verticalPx + 'px');
+      if (this.splatEnabled) {
+        this.splatFrame = Math.min(
+          Math.round(Math.abs(this.smoothedVelocity) * this.splatSeverity),
+          this.numFrames,
+        );
+      }
+    } else {
+      this.setContainerStyle('fixed', this.anchorVerticalOffset + '%');
+      this.splatFrame = 0;
+    }
+
+    this.anchorState = newState;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ANIMATION LOOP
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private animate(): void {
+    const now = performance.now();
+    const scrollTop = window.pageYOffset;
+    const dt = (now - this.lastTime) / 1000;
+
+    if (this.anchorEnabled) {
+      this.updateContainerPosition(scrollTop);
+    }
+
+    if (dt > 0 && dt < DELTA_TIME_MAX) {
+      this.updatePhysics(scrollTop, dt);
+      this.updateSplatDecay();
+      this.updateVisuals();
+    }
+
+    this.lastScrollTop = this.effectiveScrollTop(scrollTop);
+    this.lastTime = now;
+
+    this.rafId = requestAnimationFrame(() => this.animate());
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PHYSICS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private updatePhysics(scrollTop: number, dt: number): void {
+    const effective = this.effectiveScrollTop(scrollTop);
+    const distance = effective - this.lastScrollTop;
+
+    const rawVel = distance / dt;
+    this.smoothedVelocity += (rawVel - this.smoothedVelocity) * this.velocitySmoothingFactor;
+    this.scrollVelocity = rawVel;
+
+    const rawAccel = (this.smoothedVelocity - this.lastSmoothedVelocity) / dt;
+    this.smoothedAcceleration += (rawAccel - this.smoothedAcceleration) * this.accelerationSmoothingFactor;
+    this.scrollAcceleration = rawAccel;
+    this.lastSmoothedVelocity = this.smoothedVelocity;
+
+    const force = this.smoothedAcceleration * this.responsiveness;
+    this.acceleration = force / this.mass;
+  }
+
+  private updateSplatDecay(): void {
+    if (this.splatFrame > 0) {
+      this.splatFrame = Math.max(0, this.splatFrame - this.splatRecoverySpeed);
+      if (this.splatFrame < 0.1) this.splatFrame = 0;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // VISUAL / FRAME SELECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private updateVisuals(): void {
+    // Net force
+    this.netForce =
+      this.acceleration * this.accelerationWeight +
+      this.smoothedVelocity * this.velocityWeight;
+
+    // Target frame (with hysteresis)
+    const mag = Math.abs(this.netForce);
+    if (mag < this.forceIntensityLevels[0]) {
+      this.targetFrame = 0;
+    } else {
+      const level = this.intensityLevel(mag);
+      this.targetFrame = this.netForce > 0 ? level : -level;
+    }
+    this.lastTargetFrame = this.targetFrame;
+
+    // Ease toward target
+    this.currentDisplayFrame +=
+      (this.targetFrame - this.currentDisplayFrame) * this.frameEasingSpeed;
+
+    // Pick the image
+    this.updateImage();
+  }
+
+  private intensityLevel(forceMag: number): number {
+    let level = 1;
+    const current = Math.abs(this.lastTargetFrame);
+
+    for (let i = 0; i < this.forceIntensityLevels.length; i++) {
+      const threshold = this.forceIntensityLevels[i];
+      const buffer = threshold * this.thresholdBuffer;
+
+      let effective = threshold;
+      if (current === i + 1) effective = threshold - buffer;
+      else if (current === i) effective = threshold + buffer;
+
+      if (forceMag >= effective) {
+        level = i + 1;
+      } else {
+        break;
+      }
+    }
+
+    return Math.min(level, this.numFrames);
+  }
+
+  private updateImage(): void {
+    let newPath: string;
+
+    const splatDisplay = Math.round(this.splatFrame);
+    if (this.splatEnabled && this.isAnchored() && splatDisplay > 0) {
+      const frames =
+        this.anchorState === 'upper'
+          ? this.frames.upwardSplat
+          : this.frames.downwardSplat;
+      const idx = Math.min(splatDisplay - 1, frames.length - 1);
+      newPath = this.imageSrc(frames[idx]);
+    } else {
+      const display = Math.round(this.currentDisplayFrame);
+      if (display === 0) {
+        newPath = this.imageSrc(this.frames.neutral);
+      } else {
+        const frames = display > 0 ? this.frames.downward : this.frames.upward;
+        const idx = Math.min(Math.abs(display) - 1, frames.length - 1);
+        newPath = this.imageSrc(frames[idx]);
+      }
+    }
+
+    if (newPath !== this.currentFramePath) {
+      this.currentFramePath = newPath;
+      this.element.src = newPath;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PUBLIC SETTERS — call these to update parameters at runtime
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // Physics
+  setResponsiveness(v: number): void { this.responsiveness = v; }
+  setMass(v: number): void { this.mass = v; }
+  setAccelerationWeight(v: number): void { this.accelerationWeight = v; }
+  setVelocityWeight(v: number): void { this.velocityWeight = v; }
+  setVelocitySmoothingFactor(v: number): void { this.velocitySmoothingFactor = v; }
+  setAccelerationSmoothingFactor(v: number): void { this.accelerationSmoothingFactor = Math.max(0, Math.min(1, v)); }
+
+  // Thresholds
+  setThresholdMode(mode: ThresholdMode): void {
+    this.thresholdMode = mode;
+    this.forceIntensityLevels = this.generateForceThresholds();
+  }
+  setBaseForceThreshold(v: number): void {
+    this.baseForceThreshold = v;
+    this.forceIntensityLevels = this.generateForceThresholds();
+  }
+  setForceThresholdMultiplier(v: number): void {
+    this.forceThresholdMultiplier = v;
+    this.forceIntensityLevels = this.generateForceThresholds();
+  }
+  setMaxForceValue(v: number): void {
+    this.maxForceValue = v;
+    this.forceIntensityLevels = this.generateForceThresholds();
+  }
+  setThresholdBuffer(v: number): void { this.thresholdBuffer = Math.max(0, Math.min(0.5, v)); }
+
+  // Frames
+  setNumFrames(n: number): void {
+    this.numFrames = n;
+    this.frames = this.generateFrameNames(n);
+    this.forceIntensityLevels = this.generateForceThresholds();
+  }
+  setFrameEasingSpeed(v: number): void { this.frameEasingSpeed = Math.max(0, Math.min(1, v)); }
+
+  // Images
+  setImagePath(path: string): void {
+    this.imagePath = path;
+    this.element.src = this.currentFramePath;
+  }
+  setImageFrames(framesPaths: Partial<FrameNames>): void {
+    this.frames = { ...this.frames, ...framesPaths };
+    if (framesPaths.upward) {
+      this.numFrames = framesPaths.upward.length;
+      this.forceIntensityLevels = this.generateForceThresholds();
+    }
+    this.element.src = this.imageSrc(this.frames.neutral);
+  }
+
+  // Anchor
+  setAnchorEnabled(v: boolean): void {
+    this.anchorEnabled = v;
+    if (!v && this.isAnchored()) {
+      this.setContainerStyle('fixed', '50%');
+      this.anchorState = 'none';
+      this.splatFrame = 0;
+    } else if (v && this.container) {
+      this.container.style.top = this.anchorVerticalOffset + '%';
+    }
+  }
+  setAnchorUpperScrollPosition(v: number): void {
+    this.anchorUpperScrollPosition = Math.max(0, v);
+    if (this.anchorUpperScrollPosition >= this.anchorLowerScrollPosition) {
+      this.anchorUpperScrollPosition = this.anchorLowerScrollPosition - 100;
+    }
+  }
+  setAnchorLowerScrollPosition(v: number): void {
+    this.anchorLowerScrollPosition = Math.max(0, v);
+    if (this.anchorLowerScrollPosition <= this.anchorUpperScrollPosition) {
+      this.anchorLowerScrollPosition = this.anchorUpperScrollPosition + 100;
+    }
+  }
+  setAnchorVerticalOffset(v: number): void {
+    this.anchorVerticalOffset = Math.max(0, Math.min(100, v));
+    if (this.anchorEnabled && !this.isAnchored() && this.container) {
+      this.container.style.top = this.anchorVerticalOffset + '%';
+    }
+  }
+
+  // Splat
+  setSplatEnabled(v: boolean): void {
+    this.splatEnabled = v;
+    if (!v) this.splatFrame = 0;
+  }
+  setSplatSeverity(v: number): void { this.splatSeverity = Math.max(0, v); }
+  setSplatRecoverySpeed(v: number): void { this.splatRecoverySpeed = Math.max(0.001, v); }
+}
