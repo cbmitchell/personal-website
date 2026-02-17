@@ -41,6 +41,41 @@ weren't any virtual versions of it available on the web (at least, none that I f
 sufficient). Thus, seeing it as a good opportunity to stretch my JavaScript skills as 
 well as my algorithm skills, I set about making my own implementation of Shut the Box.
 
+## Game Logic
+The part of this project that I enjoyed the most was coming up with the logic used to change the state of the tiles in response to the target value of the dice, and the remaining unused tiles. This algorithm is responsible for detecting when the player's encountered a game over, as well as disabling unused tiles that can no longer be used in a valid combination based on the tiles the player has already selected. [Here's the algorithm in the code](https://github.com/cbmitchell/Shut-the-Box/blob/22bdd5e2ed6f06fbcf8ea4b154c3159e583d1eb0/index.html#L255-L283):
+```javascript
+const checkSolutions = function() {
+  unusedNums = [];
+    for (i = n-1; i >= 0; i--) {
+      if (!usedNums[i] && !selectedNums[i]) {
+        unusedNums.push(i+1);
+      }
+    }
+    solutions = checkSolutionsHelper(unusedNums, sum - tempSum, 0);
+    return solutions;
+};
+	
+// k = new sum for recursive call
+// i = pointer for where to start iterating in this recursive call
+const checkSolutionsHelper = function(arr, k, i) {
+  let solutions = [];
+  for (let j = i; k <= tri(arr[j]); j++) {
+    let subSolutions = [];
+    if (arr[j] == k) {
+      subSolutions.push([]);
+    }
+    if (arr[j] < k) {
+      subSolutions = checkSolutionsHelper(arr, k - arr[j], j+1);
+    }
+    for (let s = 0; s < subSolutions.length; s++) {
+      solutions.push([arr[j]].concat(subSolutions[s]));
+    }
+  }
+  return solutions;
+};
+```
+The function uses state variables which is why it doesn't have any arguments. I'll come back in here to explain it some other time, but for now, see if you can figure it out. It's recursive, so it's a little tricky to parse on first read. I'd suggest trying to work the problem yourself, as that will likely help you understand how this function works.
+
 ## Future Plans
 I might still go back to this project and make further enhancements to it.
 - I'd like to see if I can further optimize the algorithm for dynamically 
