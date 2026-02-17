@@ -1,15 +1,20 @@
 ---
-title: "Shut the Box"
-description: "A brief description of the project."
-image: "/images/projects/shut_the_box.png"
-githubUrl: "https://github.com/cbmitchell/Shut-the-Box"
-deploymentUrl: "https://cbmitchell.github.io/Shut-the-Box/"
+title: Shut the Box
+description: A web-based implementation of my favorite pub game!
+image: /images/projects/shut_the_box.png
+githubUrl: https://github.com/cbmitchell/Shut-the-Box
+deploymentUrl: https://cbmitchell.github.io/Shut-the-Box/
 showDemo: true
-tags: ["JavaScript", "HTML", "CSS", "Algorithms"]
+tags:
+  - JavaScript
+  - HTML
+  - CSS
+  - Algorithms
 order: 1
 ---
-
 This is a web-based implementation of an old pub game called [Shut the Box](https://en.wikipedia.org/wiki/Shut_the_box).
+
+## Table of Contents
 
 ## My History With Shut the Box
 As a kid, I was gifted a physical version of Shut the Box for Christmas one year,
@@ -54,7 +59,7 @@ const checkSolutions = function() {
     solutions = checkSolutionsHelper(unusedNums, sum - tempSum, 0);
     return solutions;
 };
-	
+
 // k = new sum for recursive call
 // i = pointer for where to start iterating in this recursive call
 const checkSolutionsHelper = function(arr, k, i) {
@@ -74,8 +79,103 @@ const checkSolutionsHelper = function(arr, k, i) {
   return solutions;
 };
 ```
-The function uses state variables which is why it doesn't have any arguments. I'll come back in here to explain it some other time, but for now, see if you can figure it out. It's recursive, so it's a little tricky to parse on first read. I'd suggest trying to work the problem yourself, as that will likely help you understand how this function works.
+The function uses state variables which is why it doesn't have any arguments. Here's what each state variable in there represents:
+- `n` – number of tiles (used and unused)
+- `usedNums` – A boolean array of length `n`. The indexes of the array correspond to the tile with the same value as the index. If the boolean at that index is `true`, the tile is "used" and therefore unavailable.
+- `selectedNums` – Similar to `usedNums`, except the boolean values represent whether a given tile has been selected. A tile is "selected" after the player selects it but before the player ends their turn. If the player ends their turn while a tile is selected, then it becomes used.
+- `sum` – The target sum that was rolled on the dice for that turn
+- `tempSum` – The sum of all the currently selected tiles
+- `tri(n)` – A small util function that calculates the value of the *n*th [triangular number](https://en.wikipedia.org/wiki/Triangular_number)
+The `solutions` array returned by `checkSolutionsHelper` (and `checkSolutions`) is a 2D array.
+- It contains one array for each possible combination of available tiles that could be summed to equal the target sum.
+- Solution arrays are arrays of integers, with each integer corresponding to an available tile.
+### Annotated Solution-Finding Algorithm
+```js
+const checkSolutions = function() {
+  // Initialize empty array of unused tiles
+  unusedNums = [];
 
+  // Loop through the value of every tile in descending order.
+  // This is done to populate the unusedNums array with the values
+  //   of tiles that are still available for selection
+  //   (i.e. neither used nor already selected)
+  for (i = n-1; i >= 0; i--) {
+    if (!usedNums[i] && !selectedNums[i]) {
+      unusedNums.push(i+1);
+    }
+  }
+
+  // First invocation of the recursive function
+  // Call it with all unused tiles (in descending order), 
+  //   the remaining target sum, and 0 index
+  // Note that the unusedNums array is never mutated in the 
+  //   recursive fns. It's always passed with the exact same value,
+  //   but the index we pass as the third parameter effectively 
+  //   lets us use subsets of it.
+  solutions = checkSolutionsHelper(unusedNums, sum - tempSum, 0);
+
+  // After the recursive function exits, return the result.
+  return solutions;
+};
+  
+// k = new sum for recursive call
+// i = pointer for where to start iterating in this recursive call
+const checkSolutionsHelper = function(arr, k, i) {
+  let solutions = [];
+  // Here, the restriction of k <= tri(arr[j]) is an optimization.
+  // This function would work without it, but would end up doing 
+  //   some unnecessary calculation.
+  // Basically, we're looking at smaller and smaller subsets of the 
+  //   array of available tiles which is sorted in descending order.
+  // The check for this loop prevents us from running calculations
+  //   on subarrays that are too small to possibly sum up to the
+  //   target sum, k.
+  // So, for example, say that the available tiles are [4, 3, 2, 1].
+  // This means arr == [4, 3, 2, 1].
+  // We would look at [4, 3, 2, 1], then [3, 2, 1], [2, 1], & [1].
+  // Now, say we have a target sum of 8 (i.e. k == 8).
+  // In our first iteration, j == 0.
+  // tri(arr[j]) –> tri(arr[0]) –> tri(4) –> 10
+  // 10 <= 8, so we'd run the logic inside the loop.
+  // On our second iteration, j == 1.
+  // tri(arr[j]) –> tri(arr[1]) –> tri(3) –> 6
+  // 6 <= 8, so we'd stop the loop and return the solutions.
+  for (let j = i; k <= tri(arr[j]); j++) {
+    let subSolutions = [];
+
+    // This is our BASE CASE for the recursive function.
+    // If the tile for this iteration is equal to the target sum,
+    //   then it's a solution on its own.
+    // Adding an empty array to subSolutions here will ensure that
+    //   this invocation of the function will ultimately return a 2D
+    //   array that looks like [[arr[i]]]
+    // It's kindof a cheeky implementation.
+    // I might want to refactor this to be a little clearer.
+    if (arr[j] == k) {
+      subSolutions.push([]);
+    }
+
+    // If the current tile is small enough to be included in a
+    //   solution, call this function recursively on the target sum
+    //   minus this tile's value.
+    // The recursive call will return an array of subsolutions, 
+    //   which we'll concatenate with the current tile in order to
+    //   produce solutions.
+    if (arr[j] < k) {
+      subSolutions = checkSolutionsHelper(arr, k - arr[j], j+1);
+    }
+    
+    // For each subsolution returned by the recursive call
+    //   (or the empty one from when the current tile is equal to
+    //   the target sum), attach the current tile to the front of
+    //   it and return it as a potential solution.
+    for (let s = 0; s < subSolutions.length; s++) {
+      solutions.push([arr[j]].concat(subSolutions[s]));
+    }
+  }
+  return solutions;
+};
+```
 ## Future Plans
 I might still go back to this project and make further enhancements to it.
 - I'd like to see if I can further optimize the algorithm for dynamically 
@@ -90,8 +190,6 @@ calculating which tiles are viable.
     - Showing the actual roll value on game over
     - [Alternate gameplay modes](https://en.wikipedia.org/wiki/Shut_the_box#Variants)
     - Alternate scoring systems
-
-## TODOs
-Come back later for even more behind-the-scenes details on this project, including...
-- Technical details
-- Highlights
+ 
+ ## TODO
+ - I created custom dice lettering for this thing. I should show those off either here or in some sort of gallery tab once I add it.
