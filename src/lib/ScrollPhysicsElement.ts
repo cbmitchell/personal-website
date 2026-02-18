@@ -92,7 +92,7 @@ const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
   velocityWeight: 0.7,
   velocitySmoothingFactor: 0.3,
   accelerationSmoothingFactor: 0.3,
-  maxVelocity: 10000,
+  maxVelocity: 15000,
 
   // Thresholds
   thresholdMode: 'linear',

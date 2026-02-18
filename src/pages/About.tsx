@@ -28,6 +28,14 @@ export function About() {
         imagePath="/images/physics_animation_frames/"
         numFrames={10}
         scrollContainerRef={scrollContainerRef}
+        mobileOverrides={{
+          responsiveness: 0.2,
+          mass: 0.4,
+          velocityWeight: 1.0,
+          forceThresholdMultiplier: 2,
+          splatSeverity: 0.003,
+          splatRecoverySpeed: 0.25,
+        }}
       />
     </Box>
   )

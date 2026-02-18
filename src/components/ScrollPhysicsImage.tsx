@@ -1,4 +1,6 @@
 import { useRef, useMemo, type CSSProperties, type MutableRefObject, type RefObject } from 'react';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { useScrollPhysics } from '../hooks/useScrollPhysics';
 import type { ScrollPhysicsElement, ScrollPhysicsOptions } from '../lib/ScrollPhysicsElement';
 
@@ -12,6 +14,12 @@ export interface ScrollPhysicsImageProps extends ScrollPhysicsOptions {
    * the window scroll position.
    */
   scrollContainerRef?: RefObject<HTMLElement | null>;
+  /**
+   * Physics option overrides applied when the viewport is below the `md`
+   * breakpoint. These are spread over the base props, so only the values
+   * you specify are overridden.
+   */
+  mobileOverrides?: ScrollPhysicsOptions;
   /** Extra class name on the outer wrapper. */
   className?: string;
   /** Extra inline styles on the outer wrapper. */
@@ -23,22 +31,28 @@ export interface ScrollPhysicsImageProps extends ScrollPhysicsOptions {
 export function ScrollPhysicsImage({
   size = 512,
   scrollContainerRef,
+  mobileOverrides,
   className,
   style,
   instanceRef: externalRef,
   ...physicsOptions
 }: ScrollPhysicsImageProps) {
   const imgRef = useRef<HTMLImageElement>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const getScrollPosition = useMemo(() => {
     if (!scrollContainerRef) return undefined;
     return () => scrollContainerRef.current?.scrollTop ?? 0;
   }, [scrollContainerRef]);
 
-  const physicsRef = useScrollPhysics(imgRef, {
+  const mergedOptions: ScrollPhysicsOptions = {
     ...physicsOptions,
+    ...(isMobile ? mobileOverrides : undefined),
     getScrollPosition,
-  });
+  };
+
+  const physicsRef = useScrollPhysics(imgRef, mergedOptions);
 
   // Expose the instance to the parent if they passed a ref
   if (externalRef) {
