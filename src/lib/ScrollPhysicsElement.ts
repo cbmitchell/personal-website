@@ -362,16 +362,28 @@ export class ScrollPhysicsElement {
     return 'following';
   }
 
+  private anchorAbsoluteTop(anchorScrollPosition: number): string {
+    const verticalPx = this.anchorVerticalPx();
+    // When switching from fixed to absolute positioning, account for the
+    // scroll container's offset from the viewport (e.g. a navbar above it).
+    // Note: offsetParent is null for fixed-positioned elements, so we use
+    // parentElement (the scroll container) whose getBoundingClientRect
+    // works regardless of its children's positioning.
+    const scrollContainer = this.container?.parentElement;
+    const containerOffset = scrollContainer
+      ? scrollContainer.getBoundingClientRect().top
+      : 0;
+    return (anchorScrollPosition + verticalPx - containerOffset) + 'px';
+  }
+
   private updateContainerPosition(scrollTop: number): void {
     if (!this.container) return;
 
     const newState = this.determineAnchorState(scrollTop);
     if (newState === this.anchorState) return;
 
-    const verticalPx = this.anchorVerticalPx();
-
     if (newState === 'upper') {
-      this.setContainerStyle('absolute', this.anchorUpperScrollPosition + verticalPx + 'px');
+      this.setContainerStyle('absolute', this.anchorAbsoluteTop(this.anchorUpperScrollPosition));
       if (this.splatEnabled) {
         this.splatFrame = Math.min(
           Math.round(Math.abs(this.smoothedVelocity) * this.splatSeverity),
@@ -379,7 +391,7 @@ export class ScrollPhysicsElement {
         );
       }
     } else if (newState === 'lower') {
-      this.setContainerStyle('absolute', this.anchorLowerScrollPosition + verticalPx + 'px');
+      this.setContainerStyle('absolute', this.anchorAbsoluteTop(this.anchorLowerScrollPosition));
       if (this.splatEnabled) {
         this.splatFrame = Math.min(
           Math.round(Math.abs(this.smoothedVelocity) * this.splatSeverity),
