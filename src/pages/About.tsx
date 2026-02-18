@@ -10,6 +10,7 @@ export function About() {
     <Box
       ref={scrollContainerRef}
       sx={{
+        position: 'relative',
         height: '100dvh',
         overflowY: 'auto',
       }}

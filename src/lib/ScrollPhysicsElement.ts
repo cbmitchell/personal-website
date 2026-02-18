@@ -41,6 +41,8 @@ export interface ScrollPhysicsOptions {
   velocityWeight?: number;
   velocitySmoothingFactor?: number;
   accelerationSmoothingFactor?: number;
+  /** Cap raw velocity to prevent spikes from irregular frame timing (default 15000). */
+  maxVelocity?: number;
 
   // Thresholds
   thresholdMode?: ThresholdMode;
@@ -84,19 +86,20 @@ const DEFAULT_GET_SCROLL_POSITION: ScrollPositionProvider = () => window.pageYOf
 
 const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
   // Physics
-  responsiveness: 0.2,
-  mass: 1,
+  responsiveness: 0.25,
+  mass: 1.0,
   accelerationWeight: 1.0,
-  velocityWeight: 0.8,
+  velocityWeight: 0.7,
   velocitySmoothingFactor: 0.3,
   accelerationSmoothingFactor: 0.3,
+  maxVelocity: 10000,
 
   // Thresholds
   thresholdMode: 'linear',
   baseForceThreshold: 1000,
   forceThresholdMultiplier: 2.5,
   maxForceValue: 10000,
-  thresholdBuffer: 0.5,
+  thresholdBuffer: 0.2,
 
   // Frames
   numFrames: 10,
@@ -108,20 +111,22 @@ const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
   // Anchor system
   anchorEnabled: true,
   anchorUpperScrollPosition: 200,
-  anchorLowerScrollPosition: 6000,
+  anchorLowerScrollPosition: 4000,
   anchorVerticalOffset: 50,
 
   // Splat animation
   splatEnabled: true,
-  splatSeverity: 0.005,
-  splatRecoverySpeed: 0.2,
+  splatSeverity: 0.002,
+  splatRecoverySpeed: 0.3,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Class
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DELTA_TIME_MAX = 0.1; // discard frames longer than 100 ms
+const DELTA_TIME_MIN = 0.004; // ignore frames shorter than 4 ms
+const DELTA_TIME_MAX = 0.1;  // discard frames longer than 100 ms
+const TARGET_DT = 1 / 60;   // reference frame time for smoothing
 
 export class ScrollPhysicsElement {
   // DOM
@@ -149,6 +154,7 @@ export class ScrollPhysicsElement {
   private velocityWeight: number;
   private velocitySmoothingFactor: number;
   private accelerationSmoothingFactor: number;
+  private maxVelocity: number;
 
   // Threshold configuration
   private thresholdMode: ThresholdMode;
@@ -217,6 +223,7 @@ export class ScrollPhysicsElement {
     this.velocityWeight = cfg.velocityWeight;
     this.velocitySmoothingFactor = cfg.velocitySmoothingFactor;
     this.accelerationSmoothingFactor = cfg.accelerationSmoothingFactor;
+    this.maxVelocity = cfg.maxVelocity;
 
     // Threshold configuration
     this.thresholdMode = cfg.thresholdMode;
@@ -400,7 +407,7 @@ export class ScrollPhysicsElement {
       this.updateContainerPosition(scrollTop);
     }
 
-    if (dt > 0 && dt < DELTA_TIME_MAX) {
+    if (dt >= DELTA_TIME_MIN && dt < DELTA_TIME_MAX) {
       this.updatePhysics(scrollTop, dt);
       this.updateSplatDecay();
       this.updateVisuals();
@@ -420,12 +427,18 @@ export class ScrollPhysicsElement {
     const effective = this.effectiveScrollTop(scrollTop);
     const distance = effective - this.lastScrollTop;
 
-    const rawVel = distance / dt;
-    this.smoothedVelocity += (rawVel - this.smoothedVelocity) * this.velocitySmoothingFactor;
+    // Frame-rate independent EMA: adjust the base factor by how long this
+    // frame actually took relative to the 60 fps reference frame.
+    const dtRatio = dt / TARGET_DT;
+    const velAlpha = 1 - Math.pow(1 - this.velocitySmoothingFactor, dtRatio);
+    const accelAlpha = 1 - Math.pow(1 - this.accelerationSmoothingFactor, dtRatio);
+
+    const rawVel = Math.max(-this.maxVelocity, Math.min(this.maxVelocity, distance / dt));
+    this.smoothedVelocity += (rawVel - this.smoothedVelocity) * velAlpha;
     this.scrollVelocity = rawVel;
 
     const rawAccel = (this.smoothedVelocity - this.lastSmoothedVelocity) / dt;
-    this.smoothedAcceleration += (rawAccel - this.smoothedAcceleration) * this.accelerationSmoothingFactor;
+    this.smoothedAcceleration += (rawAccel - this.smoothedAcceleration) * accelAlpha;
     this.scrollAcceleration = rawAccel;
     this.lastSmoothedVelocity = this.smoothedVelocity;
 
@@ -529,6 +542,7 @@ export class ScrollPhysicsElement {
   setVelocityWeight(v: number): void { this.velocityWeight = v; }
   setVelocitySmoothingFactor(v: number): void { this.velocitySmoothingFactor = v; }
   setAccelerationSmoothingFactor(v: number): void { this.accelerationSmoothingFactor = Math.max(0, Math.min(1, v)); }
+  setMaxVelocity(v: number): void { this.maxVelocity = Math.max(0, v); }
 
   // Thresholds
   setThresholdMode(mode: ThresholdMode): void {

@@ -45,6 +45,7 @@ export function useScrollPhysics(
     if (options.velocityWeight != null)               p.setVelocityWeight(options.velocityWeight);
     if (options.velocitySmoothingFactor != null)      p.setVelocitySmoothingFactor(options.velocitySmoothingFactor);
     if (options.accelerationSmoothingFactor != null)  p.setAccelerationSmoothingFactor(options.accelerationSmoothingFactor);
+    if (options.maxVelocity != null)                  p.setMaxVelocity(options.maxVelocity);
 
     // Thresholds
     if (options.thresholdMode != null)               p.setThresholdMode(options.thresholdMode);
