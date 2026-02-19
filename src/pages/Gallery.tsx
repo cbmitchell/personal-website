@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
 import { GalleryCard } from '../components/gallery'
 import { getAllGalleryPosts } from '../lib/gallery'
 
@@ -14,12 +13,6 @@ export function Gallery() {
           <GalleryCard key={post.slug} post={post} />
         ))}
       </Stack>
-
-      {posts.length === 0 && (
-        <Typography color="text.secondary">
-          No gallery posts yet. Check back soon!
-        </Typography>
-      )}
     </Box>
   )
 }

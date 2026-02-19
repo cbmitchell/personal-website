@@ -5,9 +5,9 @@ interface GalleryImageStackProps {
   images: string[]
   maxImages?: number
   previewImages?: string[]
-  hovered?: boolean
   containerWidth: number
   availableWidth?: number
+  onHoverChange?: (hovered: boolean) => void
 }
 
 const IMAGE_HEIGHT = 140
@@ -47,18 +47,19 @@ function computePositions(imageWidths: number[], targetWidth: number): number[] 
 
 export function GalleryImageStack({
   images,
-  maxImages = 5,
+  maxImages,
   previewImages,
-  hovered = false,
   containerWidth,
   availableWidth,
+  onHoverChange,
 }: GalleryImageStackProps) {
+  const [hovered, setHovered] = useState(false)
   let displayImages: string[]
 
   if (previewImages && previewImages.length > 0) {
-    displayImages = previewImages.slice(0, maxImages)
+    displayImages = maxImages ? previewImages.slice(0, maxImages) : previewImages
   } else {
-    displayImages = images.slice(0, maxImages)
+    displayImages = maxImages ? images.slice(0, maxImages) : images
   }
 
   const count = displayImages.length
@@ -88,6 +89,8 @@ export function GalleryImageStack({
 
   return (
     <Box
+      onMouseEnter={() => { setHovered(true); onHoverChange?.(true) }}
+      onMouseLeave={() => { setHovered(false); onHoverChange?.(false) }}
       sx={{
         position: 'relative',
         width: '100%',
@@ -95,29 +98,31 @@ export function GalleryImageStack({
         flexShrink: 0,
       }}
     >
-      {displayImages.map((src, i) => (
-        <Box
-          key={src}
-          component="img"
-          ref={(el: HTMLImageElement | null) => {
-            imgRefs.current[i] = el
-          }}
-          src={src}
-          alt=""
-          onLoad={handleImageLoad(i)}
-          sx={{
-            position: 'absolute',
-            left: positions[i] ?? 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            height: IMAGE_HEIGHT,
-            width: 'auto',
-            objectFit: 'contain',
-            zIndex: hovered ? 0 : count - i,
-            transition: TRANSITION,
-          }}
-        />
-      ))}
+      {[...displayImages].reverse().map((src, ri) => {
+        const i = count - 1 - ri
+        return (
+          <Box
+            key={src}
+            component="img"
+            ref={(el: HTMLImageElement | null) => {
+              imgRefs.current[i] = el
+            }}
+            src={src}
+            alt=""
+            onLoad={handleImageLoad(i)}
+            sx={{
+              position: 'absolute',
+              left: positions[i] ?? 0,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              height: IMAGE_HEIGHT,
+              width: 'auto',
+              objectFit: 'contain',
+              transition: TRANSITION,
+            }}
+          />
+        )
+      })}
     </Box>
   )
 }
