@@ -1,5 +1,6 @@
 export { About } from './About'
 export { Blog } from './Blog'
+export { Gallery } from './Gallery'
 export { BlogPost } from './BlogPost'
 export { Home } from './Home'
 export { ProjectPage } from './ProjectPage'
