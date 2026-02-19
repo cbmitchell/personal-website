@@ -10,16 +10,57 @@
 
 ## Tech Stack
 
-- React 18 + TypeScript
-- Vite for bundling
-- React Router for routing
-- Material UI with custom theme (defined in `theme.ts`)
+- React 19 + TypeScript (strict mode)
+- Vite 5 for bundling
+- React Router v7 for routing
+- MUI (Material UI) v7 with custom dark theme (`src/theme.ts`)
+- Emotion for CSS-in-JS (via MUI)
+- MDX for content authoring (blog posts, project write-ups, gallery posts)
+  - Remark plugins: frontmatter, GFM, TOC, mdx-frontmatter
+  - Rehype plugins: slug, callouts (Obsidian theme), pretty-code (Shiki, github-dark)
+- Cloudflare Turnstile for bot protection on forms
 
 ## Project Structure
 
-- src/pages/ - Page components
-- src/components/ - Reusable components
-- src/utils/ - Utility functions
+- `src/pages/` — Route-level page components (one per route)
+- `src/components/` — Reusable UI components, organized by feature:
+  - `src/components/blog/` — BlogCard, BlogLayout, mdxMapping
+  - `src/components/projects/` — ProjectCard, ProjectLayout
+  - `src/components/gallery/` — GalleryCard, GalleryImageStack
+- `src/lib/` — Content loaders and standalone engines:
+  - `blog.ts`, `projects.ts`, `gallery.ts` — MDX content loading via `import.meta.glob`
+  - `ScrollPhysicsElement.ts` — Scroll-responsive animation engine (standalone class)
+- `src/hooks/` — Custom React hooks (`useScrollPhysics`)
+- `src/types/` — TypeScript type definitions (`blog.ts`, `project.ts`, `gallery.ts`)
+- `src/content/` — MDX content files:
+  - `src/content/blog/` — Blog posts
+  - `src/content/projects/` — Project write-ups
+  - `src/content/gallery/` — Gallery posts
+
+## Content Architecture
+
+All content types follow the same pattern:
+1. **Types** (`src/types/`): `Frontmatter` → `Meta` (adds `slug`) → full type (adds `Content`)
+2. **Loader** (`src/lib/`): `getAll*()` (eager, for listing pages) + `get*BySlug()` (lazy, for detail pages)
+3. **Listing page** (`src/pages/`): Calls `getAll*()`, renders cards in a grid/stack
+4. **Detail page** (`src/pages/`): Uses `useParams` + `useEffect` to lazy-load by slug, renders in a layout wrapper
+5. **Components** (`src/components/<feature>/`): Card component for listings, Layout component for detail pages
+
+MDX frontmatter is extracted via `remark-mdx-frontmatter` and typed per content type.
+
+## Routing
+
+| Path | Page | Description |
+|------|------|-------------|
+| `/` | Home | Hero section with animated name/subtitle videos |
+| `/about` | About | Scroll physics animation demo (under construction) |
+| `/blog` | Blog | Blog post listing |
+| `/blog/:slug` | BlogPost | Individual blog post |
+| `/projects` | Projects | Project grid |
+| `/projects/:slug` | ProjectPage | Individual project write-up |
+| `/gallery` | Gallery | Gallery listing with stacked image previews |
+| `/resume` | Resume | Contact form with Turnstile CAPTCHA |
+| `*` | — | Redirects to `/` |
 
 ## Coding Preferences
 
@@ -30,16 +71,27 @@
 - Follow existing component patterns for consistency
 - Follow modern best practices whenever possible
 
+## Key Patterns
+
+- **Barrel exports**: Each component directory has an `index.ts` re-exporting its public API
+- **MUI imports**: Use deep imports (`import Box from '@mui/material/Box'`) not named imports from the package root
+- **MDX rendering**: Blog and project layouts share `mdxComponents` from `src/components/blog/mdxMapping.tsx`
+- **Responsive design**: MUI breakpoints (`xs`, `sm`, `md`) for mobile/desktop switching
+- **Environment variables**: `VITE_CONTACT_API_URL`, `VITE_TURNSTILE_SITE_KEY` (uses test key in dev)
+
 ## Forms & Security
 
-- Using Cloudflare Turnstile for bot protection
+- Resume request form at `/resume` with Cloudflare Turnstile bot protection
+- Test Turnstile key used in development, real key in production
+- Form submission POSTs JSON to `VITE_CONTACT_API_URL/contact`
 
 ## Deployment
 
-- Deploys automatically on pushes to remote main using GitHub actions.
+- Deploys automatically on pushes to remote main using GitHub Actions.
 
 ## TODOs
 
 - About page
   - Considering merging this with Home page, but not sure yet.
   - Will have information about me
+- Gallery detail page (`/gallery/:slug`) — route and page component not yet implemented
