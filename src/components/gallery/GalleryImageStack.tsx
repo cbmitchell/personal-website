@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import Box from '@mui/material/Box'
 
 interface GalleryImageStackProps {
@@ -10,8 +10,10 @@ interface GalleryImageStackProps {
   onHoverChange?: (hovered: boolean) => void
 }
 
-const IMAGE_HEIGHT = 140
-const TRANSITION = 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+const IMAGE_HEIGHT = { xs: 100, sm: 140 }
+const CONTAINER_HEIGHT = { xs: 140, sm: 200 }
+const EASING = 'cubic-bezier(0.4, 0, 0.2, 1)'
+const TRANSITION = `left 0.4s ${EASING}, opacity 0.3s ${EASING}`
 
 function computePositions(imageWidths: number[], targetWidth: number): number[] {
   const count = imageWidths.length
@@ -82,10 +84,20 @@ export function GalleryImageStack({
   )
 
   const allLoaded = imageWidths.filter((w) => w > 0).length >= count
+  const [transitionsReady, setTransitionsReady] = useState(false)
+
+  useEffect(() => {
+    if (allLoaded && !transitionsReady) {
+      requestAnimationFrame(() => {
+        setTransitionsReady(true)
+      })
+    }
+  }, [allLoaded, transitionsReady])
+
   const targetWidth = hovered && availableWidth ? availableWidth : containerWidth
   const positions = allLoaded
     ? computePositions(imageWidths, targetWidth)
-    : displayImages.map((_, i) => i * 40) // fallback before images load
+    : displayImages.map((_, i) => i * (containerWidth / (count + 1))) // fallback before images load
 
   return (
     <Box
@@ -94,7 +106,7 @@ export function GalleryImageStack({
       sx={{
         position: 'relative',
         width: '100%',
-        height: 200,
+        height: CONTAINER_HEIGHT,
         flexShrink: 0,
       }}
     >
@@ -118,8 +130,8 @@ export function GalleryImageStack({
               height: IMAGE_HEIGHT,
               width: 'auto',
               objectFit: 'contain',
-              transition: TRANSITION,
-            }}
+              opacity: allLoaded ? 1 : 0,
+              transition: transitionsReady ? TRANSITION : 'none',            }}
           />
         )
       })}

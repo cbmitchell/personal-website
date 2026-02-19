@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import Card from '@mui/material/Card'
 import CardActionArea from '@mui/material/CardActionArea'
@@ -18,6 +18,19 @@ const CARD_HEIGHT = 232
 export function GalleryCard({ post, maxPreviewImages }: GalleryCardProps) {
   const [hovered, setHovered] = useState(false)
   const cardRef = useRef<HTMLAnchorElement>(null)
+  const imageAreaRef = useRef<HTMLDivElement>(null)
+  const [imageAreaWidth, setImageAreaWidth] = useState(IMAGE_AREA_WIDTH)
+
+  useEffect(() => {
+    const measure = () => {
+      if (imageAreaRef.current) {
+        setImageAreaWidth(imageAreaRef.current.getBoundingClientRect().width)
+      }
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
 
   const getAvailableWidth = () => {
     if (!cardRef.current) return undefined
@@ -35,16 +48,17 @@ export function GalleryCard({ post, maxPreviewImages }: GalleryCardProps) {
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
           alignItems: 'center',
-          height: CARD_HEIGHT,
+          height: { xs: 'auto', sm: CARD_HEIGHT },
           p: 2,
-          gap: 3,
+          gap: { xs: 1, sm: 3 },
           overflow: 'hidden',
         }}
       >
-        {/* Image area — fixed width, images overflow when spread */}
+        {/* Image area — full width on mobile, fixed width on desktop */}
         <Box
+          ref={imageAreaRef}
           sx={{
-            width: IMAGE_AREA_WIDTH,
+            width: { xs: '100%', sm: IMAGE_AREA_WIDTH },
             flexShrink: 0,
             overflow: 'visible',
             zIndex: 1,
@@ -54,13 +68,13 @@ export function GalleryCard({ post, maxPreviewImages }: GalleryCardProps) {
             images={post.images}
             maxImages={maxPreviewImages}
             previewImages={post.previewImages}
-            containerWidth={IMAGE_AREA_WIDTH}
+            containerWidth={imageAreaWidth}
             availableWidth={getAvailableWidth()}
             onHoverChange={setHovered}
           />
         </Box>
 
-        {/* Text area — consistent position, fades out on hover */}
+        {/* Text area — fades out on hover (desktop only) */}
         <Box
           sx={{
             flex: 1,
@@ -80,7 +94,7 @@ export function GalleryCard({ post, maxPreviewImages }: GalleryCardProps) {
             color="text.secondary"
             sx={{
               display: '-webkit-box',
-              WebkitLineClamp: 4,
+              WebkitLineClamp: { xs: 2, sm: 4 },
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
             }}
