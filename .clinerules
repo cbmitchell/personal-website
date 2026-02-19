@@ -36,15 +36,10 @@
 
 ## Deployment
 
-- Currently just developing locally, but eventually plan on deploying via GitHub Pages
+- Deploys automatically on pushes to remote main using GitHub actions.
 
 ## TODOs
 
 - About page
   - Considering merging this with Home page, but not sure yet.
   - Will have information about me
-- Projects page
-  - A portfolio-like page to show off past projects that I've done
-- Resumé page
-  - Rate limiting based on IP to prevent repeated submissions from a single source
-    - Will likely require backend logic, which currently doesn't exist. Will revisit this item once it does

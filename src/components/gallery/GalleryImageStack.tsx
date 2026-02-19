@@ -1,17 +1,57 @@
+import { useRef, useState, useCallback } from 'react'
 import Box from '@mui/material/Box'
 
 interface GalleryImageStackProps {
   images: string[]
   maxImages?: number
   previewImages?: string[]
+  hovered?: boolean
+  containerWidth: number
+  availableWidth?: number
 }
 
-const IMAGE_OFFSET = 40
+const IMAGE_HEIGHT = 140
+const TRANSITION = 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+
+function computePositions(imageWidths: number[], targetWidth: number): number[] {
+  const count = imageWidths.length
+  if (count === 0) return []
+  if (count === 1) return [0]
+
+  const totalImageWidth = imageWidths.reduce((sum, w) => sum + w, 0)
+
+  if (totalImageWidth <= targetWidth) {
+    // Images fit — spread evenly across the available space
+    const totalGap = targetWidth - totalImageWidth
+    const gap = totalGap / (count - 1)
+    const positions: number[] = []
+    let left = 0
+    for (let i = 0; i < count; i++) {
+      positions.push(left)
+      left += imageWidths[i] + gap
+    }
+    return positions
+  }
+
+  // Images don't fit — overlap evenly
+  const totalOverlap = totalImageWidth - targetWidth
+  const overlapPerGap = totalOverlap / (count - 1)
+  const positions: number[] = []
+  let left = 0
+  for (let i = 0; i < count; i++) {
+    positions.push(left)
+    left += imageWidths[i] - overlapPerGap
+  }
+  return positions
+}
 
 export function GalleryImageStack({
   images,
   maxImages = 5,
   previewImages,
+  hovered = false,
+  containerWidth,
+  availableWidth,
 }: GalleryImageStackProps) {
   let displayImages: string[]
 
@@ -22,13 +62,35 @@ export function GalleryImageStack({
   }
 
   const count = displayImages.length
-  const stackWidth = 180 + IMAGE_OFFSET * (count - 1)
+
+  const imgRefs = useRef<(HTMLImageElement | null)[]>([])
+  const [imageWidths, setImageWidths] = useState<number[]>([])
+
+  const handleImageLoad = useCallback(
+    (index: number) => () => {
+      setImageWidths((prev) => {
+        const next = [...prev]
+        const el = imgRefs.current[index]
+        if (el) {
+          next[index] = el.getBoundingClientRect().width
+        }
+        return next
+      })
+    },
+    []
+  )
+
+  const allLoaded = imageWidths.filter((w) => w > 0).length >= count
+  const targetWidth = hovered && availableWidth ? availableWidth : containerWidth
+  const positions = allLoaded
+    ? computePositions(imageWidths, targetWidth)
+    : displayImages.map((_, i) => i * 40) // fallback before images load
 
   return (
     <Box
       sx={{
         position: 'relative',
-        width: stackWidth,
+        width: '100%',
         height: 200,
         flexShrink: 0,
       }}
@@ -37,19 +99,22 @@ export function GalleryImageStack({
         <Box
           key={src}
           component="img"
+          ref={(el: HTMLImageElement | null) => {
+            imgRefs.current[i] = el
+          }}
           src={src}
           alt=""
+          onLoad={handleImageLoad(i)}
           sx={{
             position: 'absolute',
-            left: i * IMAGE_OFFSET,
+            left: positions[i] ?? 0,
             top: '50%',
             transform: 'translateY(-50%)',
-            width: 180,
-            height: 140,
-            objectFit: 'cover',
-            borderRadius: 1,
-            zIndex: count - i,
-            boxShadow: 3,
+            height: IMAGE_HEIGHT,
+            width: 'auto',
+            objectFit: 'contain',
+            zIndex: hovered ? 0 : count - i,
+            transition: TRANSITION,
           }}
         />
       ))}
