@@ -33,6 +33,7 @@ export function About() {
           mass: 0.4,
           velocityWeight: 1.0,
           forceThresholdMultiplier: 2,
+          thresholdBuffer: 0.35,
           splatSeverity: 0.003,
           splatRecoverySpeed: 0.25,
         }}

@@ -86,7 +86,7 @@ const DEFAULT_GET_SCROLL_POSITION: ScrollPositionProvider = () => window.pageYOf
 
 const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
   // Physics
-  responsiveness: 0.25,
+  responsiveness: 0.3,
   mass: 1.0,
   accelerationWeight: 1.0,
   velocityWeight: 0.7,
@@ -111,13 +111,13 @@ const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
   // Anchor system
   anchorEnabled: true,
   anchorUpperScrollPosition: 200,
-  anchorLowerScrollPosition: 4000,
+  anchorLowerScrollPosition: 7900,
   anchorVerticalOffset: 50,
 
   // Splat animation
   splatEnabled: true,
-  splatSeverity: 0.002,
-  splatRecoverySpeed: 0.3,
+  splatSeverity: 0.0025,
+  splatRecoverySpeed: 0.2,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
