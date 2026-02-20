@@ -1,4 +1,4 @@
-import { useRef, useMemo, type CSSProperties, type MutableRefObject, type RefObject } from 'react';
+import { useRef, useMemo, useLayoutEffect, type CSSProperties, type MutableRefObject, type RefObject } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { useScrollPhysics } from '../hooks/useScrollPhysics';
@@ -55,9 +55,11 @@ export function ScrollPhysicsImage({
   const physicsRef = useScrollPhysics(imgRef, mergedOptions);
 
   // Expose the instance to the parent if they passed a ref
-  if (externalRef) {
-    externalRef.current = physicsRef.current;
-  }
+  useLayoutEffect(() => {
+    if (externalRef) {
+      externalRef.current = physicsRef.current;
+    }
+  });
 
   return (
     <div

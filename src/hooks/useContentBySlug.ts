@@ -11,15 +11,11 @@ export function useContentBySlug<T>(
   fetcher: (slug: string) => Promise<T | null>,
 ): ContentState<T> {
   const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [notFound, setNotFound] = useState(false)
+  const [loading, setLoading] = useState(!!slug)
+  const [notFound, setNotFound] = useState(!slug)
 
   useEffect(() => {
-    if (!slug) {
-      setNotFound(true)
-      setLoading(false)
-      return
-    }
+    if (!slug) return
 
     fetcher(slug)
       .then((result) => {

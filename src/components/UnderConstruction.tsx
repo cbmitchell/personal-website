@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useState } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
@@ -9,10 +9,10 @@ const images = Object.keys(imageModules).map((path) =>
 )
 
 export function UnderConstruction() {
-  const randomImage = useMemo(() => {
+  const [randomImage] = useState(() => {
     const index = Math.floor(Math.random() * images.length)
     return images[index]
-  }, [])
+  })
 
   return (
     <Box

@@ -20,6 +20,7 @@ export function GalleryCard({ post, maxPreviewImages }: GalleryCardProps) {
   const cardRef = useRef<HTMLAnchorElement>(null)
   const imageAreaRef = useRef<HTMLDivElement>(null)
   const [imageAreaWidth, setImageAreaWidth] = useState(IMAGE_AREA_WIDTH)
+  const [availableWidth, setAvailableWidth] = useState<number | undefined>(undefined)
 
   useEffect(() => {
     const measure = () => {
@@ -32,11 +33,17 @@ export function GalleryCard({ post, maxPreviewImages }: GalleryCardProps) {
     return () => window.removeEventListener('resize', measure)
   }, [])
 
-  const getAvailableWidth = () => {
-    if (!cardRef.current) return undefined
-    const padding = 32 // p: 2 = 16px × 2
-    return cardRef.current.getBoundingClientRect().width - padding
-  }
+  useEffect(() => {
+    const measure = () => {
+      if (cardRef.current) {
+        const padding = 32 // p: 2 = 16px × 2
+        setAvailableWidth(cardRef.current.getBoundingClientRect().width - padding)
+      }
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
 
   return (
     <Card sx={{ bgcolor: 'background.paper' }}>
@@ -69,7 +76,7 @@ export function GalleryCard({ post, maxPreviewImages }: GalleryCardProps) {
             maxImages={maxPreviewImages}
             previewImages={post.previewImages}
             containerWidth={imageAreaWidth}
-            availableWidth={getAvailableWidth()}
+            availableWidth={availableWidth}
             onHoverChange={setHovered}
           />
         </Box>

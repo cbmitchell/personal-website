@@ -56,7 +56,7 @@ export function Resume() {
       setSnackbarOpen(true)
       formRef.current?.reset()
       setTurnstileToken(null)
-    } catch (error) {
+    } catch {
       setStatus('error')
     }
   }
