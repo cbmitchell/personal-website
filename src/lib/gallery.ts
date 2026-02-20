@@ -1,13 +1,10 @@
-import type { ComponentType } from 'react'
 import type { GalleryFrontmatter, GalleryMeta, GalleryPost } from '../types/gallery'
+import type { MDXModule } from '../types/mdx'
 
-interface MDXModule {
-  frontmatter: GalleryFrontmatter
-  default: ComponentType
-}
+type GalleryModule = MDXModule<GalleryFrontmatter>
 
 export function getAllGalleryPosts(): GalleryMeta[] {
-  const modules = import.meta.glob<MDXModule>('../content/gallery/*.mdx', {
+  const modules = import.meta.glob<GalleryModule>('../content/gallery/*.mdx', {
     eager: true,
   })
 
@@ -30,7 +27,7 @@ export function getAllGalleryPosts(): GalleryMeta[] {
 export async function getGalleryPostBySlug(
   slug: string
 ): Promise<GalleryPost | null> {
-  const modules = import.meta.glob<MDXModule>('../content/gallery/*.mdx')
+  const modules = import.meta.glob<GalleryModule>('../content/gallery/*.mdx')
 
   const path = `../content/gallery/${slug}.mdx`
   const loader = modules[path]

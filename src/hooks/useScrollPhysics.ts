@@ -70,7 +70,29 @@ export function useScrollPhysics(
 
     // Scroll position source
     if (options.getScrollPosition != null)             p.setGetScrollPosition(options.getScrollPosition);
-  });
+  }, [
+    options.responsiveness,
+    options.mass,
+    options.accelerationWeight,
+    options.velocityWeight,
+    options.velocitySmoothingFactor,
+    options.accelerationSmoothingFactor,
+    options.maxVelocity,
+    options.thresholdMode,
+    options.baseForceThreshold,
+    options.forceThresholdMultiplier,
+    options.maxForceValue,
+    options.thresholdBuffer,
+    options.frameEasingSpeed,
+    options.anchorEnabled,
+    options.anchorUpperScrollPosition,
+    options.anchorLowerScrollPosition,
+    options.anchorVerticalOffset,
+    options.splatEnabled,
+    options.splatSeverity,
+    options.splatRecoverySpeed,
+    options.getScrollPosition,
+  ]);
 
   return instanceRef;
 }

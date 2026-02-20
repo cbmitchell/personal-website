@@ -82,7 +82,7 @@ export interface FrameNames {
 // Default configuration
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DEFAULT_GET_SCROLL_POSITION: ScrollPositionProvider = () => window.pageYOffset;
+const DEFAULT_GET_SCROLL_POSITION: ScrollPositionProvider = () => window.scrollY;
 
 const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
   // Physics
@@ -110,13 +110,13 @@ const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
 
   // Anchor system
   anchorEnabled: true,
-  anchorUpperScrollPosition: 200,
+  anchorUpperScrollPosition: 375,
   anchorLowerScrollPosition: 7900,
   anchorVerticalOffset: 50,
 
   // Splat animation
   splatEnabled: true,
-  splatSeverity: 0.0025,
+  splatSeverity: 0.002,
   splatRecoverySpeed: 0.2,
 };
 

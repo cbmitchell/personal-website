@@ -1,13 +1,10 @@
-import type { ComponentType } from 'react'
 import type { ProjectFrontmatter, ProjectMeta, Project } from '../types/project'
+import type { MDXModule } from '../types/mdx'
 
-interface MDXModule {
-  frontmatter: ProjectFrontmatter
-  default: ComponentType
-}
+type ProjectModule = MDXModule<ProjectFrontmatter>
 
 export function getAllProjects(): ProjectMeta[] {
-  const modules = import.meta.glob<MDXModule>('../content/projects/*.mdx', {
+  const modules = import.meta.glob<ProjectModule>('../content/projects/*.mdx', {
     eager: true,
   })
 
@@ -30,7 +27,7 @@ export function getAllProjects(): ProjectMeta[] {
 export async function getProjectBySlug(
   slug: string
 ): Promise<Project | null> {
-  const modules = import.meta.glob<MDXModule>('../content/projects/*.mdx')
+  const modules = import.meta.glob<ProjectModule>('../content/projects/*.mdx')
 
   const path = `../content/projects/${slug}.mdx`
   const loader = modules[path]

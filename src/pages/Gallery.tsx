@@ -8,15 +8,13 @@ export function Gallery() {
   const posts = getAllGalleryPosts()
 
   return (
-    <>
-    <Typography variant="h3" gutterBottom>Gallery</Typography>
-    <Box component="section" sx={{ maxWidth: 1080, mx: 'auto', py: 4, px: 2 }}>
+    <Box component="section" sx={{ maxWidth: 1080, mx: 'auto', py: 4, px: 3 }}>
+      <Typography variant="h1" gutterBottom>Gallery</Typography>
       <Stack spacing={3}>
         {posts.map((post) => (
           <GalleryCard key={post.slug} post={post} />
         ))}
       </Stack>
     </Box>
-    </>
   )
 }

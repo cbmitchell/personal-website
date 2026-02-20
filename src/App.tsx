@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import { Navbar } from './components'
-import { About, Blog, BlogPost, Gallery, Home, ProjectPage, Projects, Resume } from './pages'
+import { About, Blog, BlogPost, Gallery, GalleryPage, Home, ProjectPage, Projects, Resume } from './pages'
 
 export function App() {
   return (
@@ -22,6 +22,7 @@ export function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/gallery/:slug" element={<GalleryPage />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:slug" element={<ProjectPage />} />
           <Route path="/resume" element={<Resume />} />

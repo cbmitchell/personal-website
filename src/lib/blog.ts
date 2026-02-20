@@ -1,14 +1,11 @@
-import type { ComponentType } from 'react'
 import type { PostFrontmatter, PostMeta, Post } from '../types/blog'
+import type { MDXModule } from '../types/mdx'
 
-interface MDXModule {
-  frontmatter: PostFrontmatter
-  default: ComponentType
-}
+type BlogModule = MDXModule<PostFrontmatter>
 
 // Get all posts with metadata (for listing page)
 export function getAllPosts(): PostMeta[] {
-  const modules = import.meta.glob<MDXModule>('../content/blog/*.mdx', {
+  const modules = import.meta.glob<BlogModule>('../content/blog/*.mdx', {
     eager: true,
   })
 
@@ -28,7 +25,7 @@ export function getAllPosts(): PostMeta[] {
 
 // Get single post by slug
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  const modules = import.meta.glob<MDXModule>('../content/blog/*.mdx')
+  const modules = import.meta.glob<BlogModule>('../content/blog/*.mdx')
 
   const path = `../content/blog/${slug}.mdx`
   const loader = modules[path]

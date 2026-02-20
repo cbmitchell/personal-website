@@ -12,13 +12,7 @@ interface ImportMeta {
 declare module '*.mdx' {
   import type { ComponentType } from 'react'
 
-  export const frontmatter: {
-    title: string
-    date: string
-    excerpt: string
-    tags: string[]
-    published?: boolean
-  }
+  export const frontmatter: Record<string, unknown>
 
   const MDXComponent: ComponentType
   export default MDXComponent

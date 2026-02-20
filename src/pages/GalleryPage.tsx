@@ -1,13 +1,13 @@
 import { useParams, Navigate } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
-import { BlogLayout } from '../components/blog'
-import { getPostBySlug } from '../lib/blog'
+import { GalleryLayout } from '../components/gallery'
+import { getGalleryPostBySlug } from '../lib/gallery'
 import { useContentBySlug } from '../hooks/useContentBySlug'
 
-export function BlogPost() {
+export function GalleryPage() {
   const { slug } = useParams<{ slug: string }>()
-  const { data: post, loading, notFound } = useContentBySlug(slug, getPostBySlug)
+  const { data: post, loading, notFound } = useContentBySlug(slug, getGalleryPostBySlug)
 
   if (loading) {
     return (
@@ -18,14 +18,14 @@ export function BlogPost() {
   }
 
   if (notFound || !post) {
-    return <Navigate to="/blog" replace />
+    return <Navigate to="/gallery" replace />
   }
 
   const { Content, ...meta } = post
 
   return (
-    <BlogLayout meta={meta}>
+    <GalleryLayout meta={meta}>
       <Content />
-    </BlogLayout>
+    </GalleryLayout>
   )
 }
