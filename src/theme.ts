@@ -65,6 +65,12 @@ export const theme = createTheme({
         body: {
           backgroundColor: '#000000',
         },
+        // Offset anchor scroll targets by the fixed navbar height on desktop
+        '@media (min-width: 900px)': {
+          html: {
+            scrollPaddingTop: '80px',
+          },
+        },
       },
     },
     MuiAppBar: {

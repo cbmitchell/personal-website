@@ -18,7 +18,9 @@ export const mdxComponents: MDXComponents = {
   a: ({ href = '', ...props }) =>
     isExternal(href)
       ? <Link href={href} color="primary" target="_blank" rel="noopener noreferrer" {...props} />
-      : <Link component={RouterLink} to={href} color="primary" {...props} />,
+      : href.startsWith('#')
+        ? <Link href={href} color="primary" {...props} />
+        : <Link component={RouterLink} to={href} color="primary" {...props} />,
   hr: () => <Divider sx={{ my: 4 }} />,
   pre: (props) => (
     <Box

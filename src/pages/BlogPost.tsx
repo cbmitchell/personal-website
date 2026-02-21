@@ -4,10 +4,12 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { BlogLayout } from '../components/blog'
 import { getPostBySlug } from '../lib/blog'
 import { useContentBySlug } from '../hooks/useContentBySlug'
+import { useHashScroll } from '../hooks/useHashScroll'
 
 export function BlogPost() {
   const { slug } = useParams<{ slug: string }>()
   const { data: post, loading, notFound } = useContentBySlug(slug, getPostBySlug)
+  useHashScroll(!loading && !!post)
 
   if (loading) {
     return (

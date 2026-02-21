@@ -4,10 +4,12 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { ProjectLayout } from '../components/projects'
 import { getProjectBySlug } from '../lib/projects'
 import { useContentBySlug } from '../hooks/useContentBySlug'
+import { useHashScroll } from '../hooks/useHashScroll'
 
 export function ProjectPage() {
   const { slug } = useParams<{ slug: string }>()
   const { data: project, loading, notFound } = useContentBySlug(slug, getProjectBySlug)
+  useHashScroll(!loading && !!project)
 
   if (loading) {
     return (
