@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import Box from '@mui/material/Box'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 interface GalleryImageStackProps {
   images: string[]
@@ -55,6 +56,7 @@ export function GalleryImageStack({
   availableWidth,
   onHoverChange,
 }: GalleryImageStackProps) {
+  const canHover = useMediaQuery('(hover: hover) and (pointer: fine)')
   const [hovered, setHovered] = useState(false)
   let displayImages: string[]
 
@@ -101,8 +103,8 @@ export function GalleryImageStack({
 
   return (
     <Box
-      onMouseEnter={() => { setHovered(true); onHoverChange?.(true) }}
-      onMouseLeave={() => { setHovered(false); onHoverChange?.(false) }}
+      onMouseEnter={() => { if (canHover) { setHovered(true); onHoverChange?.(true) } }}
+      onMouseLeave={() => { if (canHover) { setHovered(false); onHoverChange?.(false) } }}
       sx={{
         position: 'relative',
         width: '100%',

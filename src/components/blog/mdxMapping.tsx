@@ -3,14 +3,22 @@ import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
 import Typography from '@mui/material/Typography'
 import type { MDXComponents } from 'mdx/types'
+import { Link as RouterLink } from 'react-router-dom'
 import { Heading } from './Heading'
+import { GalleryImageList } from '../gallery/GalleryImageList'
+
+const isExternal = (href: string) => /^(?:[a-z][a-z\d+\-.]*:|\/\/)/.test(href)
 
 export const mdxComponents: MDXComponents = {
+  ImageGrid: GalleryImageList,
   h1: (props) => <Heading variant="h2" {...props} />,
   h2: (props) => <Heading variant="h3" {...props} />,
   h3: (props) => <Heading variant="h4" {...props} />,
   p: (props) => <Typography variant="body1" component="p" sx={{ mb: '1em' }} {...props} />,
-  a: (props) => <Link color="primary" {...props} />,
+  a: ({ href = '', ...props }) =>
+    isExternal(href)
+      ? <Link href={href} color="primary" target="_blank" rel="noopener noreferrer" {...props} />
+      : <Link component={RouterLink} to={href} color="primary" {...props} />,
   hr: () => <Divider sx={{ my: 4 }} />,
   pre: (props) => (
     <Box
