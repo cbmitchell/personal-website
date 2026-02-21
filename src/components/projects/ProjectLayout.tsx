@@ -56,8 +56,6 @@ export function ProjectLayout({ meta, children }: ProjectLayoutProps) {
           </Stack>
         )}
 
-        {children}
-
         {meta.showDemo && meta.deploymentUrl && (
           <Box sx={{ mt: 3 }}>
             <Typography variant="h3" gutterBottom>
@@ -78,6 +76,8 @@ export function ProjectLayout({ meta, children }: ProjectLayoutProps) {
             />
           </Box>
         )}
+
+        {children}
       </Box>
     </MDXProvider>
   )

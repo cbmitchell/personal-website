@@ -61,7 +61,7 @@ export interface ScrollPhysicsOptions {
   // Anchor system
   anchorEnabled?: boolean;
   anchorUpperScrollPosition?: number;
-  anchorLowerScrollPosition?: number;
+  anchorLowerScrollPosition?: number | null;
   anchorVerticalOffset?: number;
 
   // Splat animation
@@ -111,7 +111,7 @@ const DEFAULTS: Required<Omit<ScrollPhysicsOptions, 'getScrollPosition'>> = {
   // Anchor system
   anchorEnabled: true,
   anchorUpperScrollPosition: 375,
-  anchorLowerScrollPosition: 7900,
+  anchorLowerScrollPosition: null,
   anchorVerticalOffset: 50,
 
   // Splat animation
@@ -179,7 +179,7 @@ export class ScrollPhysicsElement {
   // Anchor system
   private anchorEnabled: boolean;
   private anchorUpperScrollPosition: number;
-  private anchorLowerScrollPosition: number;
+  private anchorLowerScrollPosition: number | null;
   private anchorVerticalOffset: number;
   private anchorState: AnchorState;
 
@@ -337,10 +337,25 @@ export class ScrollPhysicsElement {
     return (this.anchorVerticalOffset / 100) * window.innerHeight;
   }
 
+  /**
+   * Returns the effective lower anchor scroll position.
+   * When null (the default), computes dynamically: slightly more than half
+   * the viewport height above the bottom of the scroll container.
+   */
+  private effectiveLowerScrollPosition(): number {
+    if (this.anchorLowerScrollPosition !== null) return this.anchorLowerScrollPosition;
+    const scrollContainer = this.container?.parentElement;
+    const viewportH = window.innerHeight;
+    const maxScroll = scrollContainer
+      ? scrollContainer.scrollHeight - scrollContainer.clientHeight
+      : document.documentElement.scrollHeight - viewportH;
+    return maxScroll - viewportH * 0.55;
+  }
+
   private effectiveScrollTop(currentScrollTop: number): number {
     if (!this.anchorEnabled) return currentScrollTop;
     if (this.anchorState === 'upper') return this.anchorUpperScrollPosition;
-    if (this.anchorState === 'lower') return this.anchorLowerScrollPosition;
+    if (this.anchorState === 'lower') return this.effectiveLowerScrollPosition();
     return currentScrollTop;
   }
 
@@ -358,7 +373,7 @@ export class ScrollPhysicsElement {
 
   private determineAnchorState(scrollTop: number): AnchorState {
     if (scrollTop < this.anchorUpperScrollPosition) return 'upper';
-    if (scrollTop >= this.anchorLowerScrollPosition) return 'lower';
+    if (scrollTop >= this.effectiveLowerScrollPosition()) return 'lower';
     return 'following';
   }
 
@@ -391,7 +406,7 @@ export class ScrollPhysicsElement {
         );
       }
     } else if (newState === 'lower') {
-      this.setContainerStyle('absolute', this.anchorAbsoluteTop(this.anchorLowerScrollPosition));
+      this.setContainerStyle('absolute', this.anchorAbsoluteTop(this.effectiveLowerScrollPosition()));
       if (this.splatEnabled) {
         this.splatFrame = Math.min(
           Math.round(Math.abs(this.smoothedVelocity) * this.splatSeverity),
@@ -610,11 +625,14 @@ export class ScrollPhysicsElement {
   }
   setAnchorUpperScrollPosition(v: number): void {
     this.anchorUpperScrollPosition = Math.max(0, v);
-    if (this.anchorUpperScrollPosition >= this.anchorLowerScrollPosition) {
-      this.anchorUpperScrollPosition = this.anchorLowerScrollPosition - 100;
+    const lower = this.effectiveLowerScrollPosition();
+    if (this.anchorUpperScrollPosition >= lower) {
+      this.anchorUpperScrollPosition = lower - 100;
     }
   }
-  setAnchorLowerScrollPosition(v: number): void {
+  /** Pass null to restore the dynamic default. */
+  setAnchorLowerScrollPosition(v: number | null): void {
+    if (v === null) { this.anchorLowerScrollPosition = null; return; }
     this.anchorLowerScrollPosition = Math.max(0, v);
     if (this.anchorLowerScrollPosition <= this.anchorUpperScrollPosition) {
       this.anchorLowerScrollPosition = this.anchorUpperScrollPosition + 100;

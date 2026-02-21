@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import Box from '@mui/material/Box'
 import { UnderConstruction } from '../components/UnderConstruction'
 import { ScrollPhysicsImage } from '../components/ScrollPhysicsImage'
+import Typography from '@mui/material/Typography'
 
 export function About() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -23,6 +24,9 @@ export function About() {
         }}
       >
         <UnderConstruction />
+        <Typography variant='h3' sx={{ width: '100%', px: '15%', textAlign: 'center' }}>
+          In the meantime, please enjoy this little scroll-driven physics animation!
+        </Typography>
       </Box>
       <ScrollPhysicsImage
         imagePath="/images/physics_animation_frames/"
@@ -30,7 +34,7 @@ export function About() {
         scrollContainerRef={scrollContainerRef}
         mobileOverrides={{
           responsiveness: 0.2,
-          mass: 0.4,
+          mass: 0.3,
           velocityWeight: 1.0,
           forceThresholdMultiplier: 2,
           thresholdBuffer: 0.35,
