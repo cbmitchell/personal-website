@@ -46,6 +46,12 @@ weren't any virtual versions of it available on the web (at least, none that I f
 sufficient). Thus, seeing it as a good opportunity to stretch my JavaScript skills as 
 well as my algorithm skills, I set about making my own implementation of Shut the Box.
 
+## Assets
+The dice lettering that you seen when the game ends was custom-created by me.
+I actually created these "dice letters" for the entire alphabet just so I'd be able
+to spell anything I wanted with them. You can see all of the letters in the 
+[Dice Lettering post in the Gallery](/gallery/shut-the-box-lettering).
+
 ## Game Logic
 The part of this project that I enjoyed the most was coming up with the logic used to change the state of the tiles in response to the target value of the dice, and the remaining unused tiles. This algorithm is responsible for detecting when the player's encountered a game over, as well as disabling unused tiles that can no longer be used in a valid combination based on the tiles the player has already selected. [Here's the algorithm in the code](https://github.com/cbmitchell/Shut-the-Box/blob/22bdd5e2ed6f06fbcf8ea4b154c3159e583d1eb0/index.html#L255-L283):
 ```javascript
@@ -86,6 +92,7 @@ The function uses state variables which is why it doesn't have any arguments. He
 - `sum` – The target sum that was rolled on the dice for that turn
 - `tempSum` – The sum of all the currently selected tiles
 - `tri(n)` – A small util function that calculates the value of the *n*th [triangular number](https://en.wikipedia.org/wiki/Triangular_number)
+
 The `solutions` array returned by `checkSolutionsHelper` (and `checkSolutions`) is a 2D array.
 - It contains one array for each possible combination of available tiles that could be summed to equal the target sum.
 - Solution arrays are arrays of integers, with each integer corresponding to an available tile.
@@ -176,7 +183,7 @@ const checkSolutionsHelper = function(arr, k, i) {
   return solutions;
 };
 ```
-## Future Plans
+## Potential Enhancements
 I might still go back to this project and make further enhancements to it.
 - I'd like to see if I can further optimize the algorithm for dynamically 
 calculating which tiles are viable.
@@ -190,6 +197,3 @@ calculating which tiles are viable.
     - Showing the actual roll value on game over
     - [Alternate gameplay modes](https://en.wikipedia.org/wiki/Shut_the_box#Variants)
     - Alternate scoring systems
- 
- ## TODO
- - I created custom dice lettering for this thing. I should show those off either here or in some sort of gallery tab once I add it.
