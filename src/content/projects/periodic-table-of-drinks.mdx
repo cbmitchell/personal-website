@@ -1,0 +1,57 @@
+---
+title: Periodic Table of Drinks
+description: An online periodic table chock-full of delicious (or ridiculous) drink recipes
+image: /images/projects/periodic-table-of-drinks/periodic-table-of-drinks.png
+githubUrl: https://github.com/cbmitchell/periodic-table-of-drinks
+deploymentUrl: https://cbmitchell.github.io/periodic-table-of-drinks/
+showDemo: true
+tags:
+  - TypeScript
+  - React
+order: 2
+---
+
+## Table of Contents
+
+# A Shot of Inspiration
+This is a fun little project I collaborated on with my brother. Being a PhD student in chemistry, he naturally has a strong interest in mixology since it combines all the scientific knowledge of chemistry with a coping mechanism many grad school students leverage on their ways to graduation.
+
+Thus, it comes as no surprise that, at some point, someone gifted him a poster displaying the "Periodic Table of Drinks" (Once I find out who made that original poster, I'll be sure to credit them here). The poster had a handful of cells each with a different drink recipe, and it was roughly shaped like the real Periodic Table. However, my brother wasn't satisfied with its reduced scale and its resulting failure to accurately conform to the real Periodic Table of Elements. So, he took it upon himself to come up with his own list of drinks that could **actually** fill out an **entire** Periodic Table. All 118 cells of it. What's more, each group in the table would be a different type of drink. This would be the **true** Periodic Table of Drinks.
+
+His ultimate goal was to create a better "Periodic Table of Drinks" poster simply for himself. At some point, I asked him to show me how this project of his was coming along, at which point he proudly showed me a giant table he'd been hand-crafting in Canva. He was manually positioning every element of every cell of the entire table, and while what he had so far looked good, and the sheer committment on display was commendible, I immediately told him that there was a better way.
+
+I proposed we simply create a webapp that would generate the table using data we'd feed into it to populate the cells. I pointed out that the React framework would be a good fit for something like this since its component pattern would mean we'd just need to create a "Cell" component once, and then we could replicate it many times, feeding in different props to adjust its appearance. And, if we decided that the cells' appearances needed tweaking, we could easily make the change and have it uniformly apply to all the cells in the table. No manually adjusting 118 cells by hand.
+
+I told him we could easily create the webapp in such a way that the webpage itself could be saved off in an image file format of his choosing at a very high resolution which would be perfect for printing as a poster. But beyond that, I pointed out that the webapp could also be hosted and made publicly accessible, and then he'd have something cool to show all his chemist friends at parties.
+
+So, with my brother as my sole stakeholder, I set out to create the perfect framework for showing off his Periodic Table of Drinks.
+# A Dash of Collaboration
+As I worked on the project, I consistently checked in with my brother, asking him to make clarifications about the requirements of the project. Eventually, I created a fleshed out list of requirements and then had him review it. When he signed off, I set to work laying down code.
+
+<img src='/images/projects/periodic-table-of-drinks/drink-cell-design.png' style={{ display: 'block', width: '100%', objectFit: 'contain' }} />
+
+Even as I continued to work on the project, though, I would occasionally send my brother updates on my progress, each time asking him for feedback incase something looked like it needed tweaking. As someone with years of industry experience working with stakeholders to produce software products, and even more years of experience knowing my brother, I would have been suspicious if he'd consistently responded saying that everything looked good. Like me, he bears the curse of perfectionism, and I've known him to be quite exacting, detail-oriented, and opinionated in order to reach his specific vision for projects like this one. I can relate.
+
+However, our back and forth for creating this project was surprisingly smooth. Almost suspiciously smooth... Normally, when a stakeholder consistantly gives me generic, unspecific approvals, it's a red flag. They typically *do* have issues with the design (nearly all stakeholders do), but they either haven't looked at things closely enough to realize it, or they simply don't have a solid grasp on what they really want. Once the stakeholder finally *does* take the time to solidify their desires and then carefully compare them with what you've shown them, they often surprise you with sudden requests to change things you'd formerly had their approval on. That's just the nature of the beast, and while there *are* strategies that someone in my position can employ to avoid these surprises and to mitigate wasted time & effort, this friction will always be present when creating something. Hell, even when I'm my *own* stakeholder on something, this happens.
+
+So, while the feedback I received from my brother was predominantly approving, there were always small tweaks or adjustments he would request. Honestly, I took great comfort in these little requests, as they served as proof that he was actively paying attention and thinking about whether or not what I'd created was fulfilling his desires for the project. It was good stakeholder etiquette, and I was relieved to see it.
+
+Even so, I was consistently asking him more specific, directed questions about what he was after based on what I knew about his overarching goals for the project. He was quick to reply and specific in his responses. Again, much appreciated. Not only were these questions helpful in avoiding sudden changes down the road, but they were also my way of reassuring my stakeholder that I was listening to his feedback, as well as considering the desires he'd expressed to me at the outset and how we might best achieve them.
+
+Looking back on it, it was really good collaboration. I suppose that should comes as no surprise considering the fact that my brother and I are often on the same wavelength (we make a formidable team in charades). Still, it's always a relief when to have a good, communicative, stakeholder with a firm idea of what they want, but also enough trust in you to let you help them get what they want, even if the way they get it doesn't look like what they'd originally envisioned.
+# Shake Until Random
+At a certain point, I had finished most of the coding for the actual table itself, and was just waiting on my brother to get all the drinks data formatted and ready to feed into the page. So, in order to ensure that things were working correctly, I grabbed a couple drinks from his list and manually created some dummy data by duplicating them. This worked, but I ultimately found myself wanting more interesting test data, so I went down a slight rabbit hole and created logic for generating random drinks to populate the table with in lieu of real drink data.
+
+The way things are set up, drinks data is passed into the table via a `drinkData` variable. But, if any of the cells in the periodic table aren't included in that data, those cells will be [automatically filled](https://github.com/cbmitchell/periodic-table-of-drinks/blob/e65ae5f4d9cbfc5ec9d760af7cff05c5b38d7a6d/src/App.tsx#L11) with randomly-generated drinks instead. The randomization logic lives [here](https://github.com/cbmitchell/periodic-table-of-drinks/blob/main/src/utils/randomizers.ts), and is more robust than one might expect. It combines various [predetermined parts](https://github.com/cbmitchell/periodic-table-of-drinks/blob/main/src/utils/randomizerParts.ts) in order to generate a random drink.
+>[!info] Eventually, I'll probably update this post with a brief explaner for how the randomization logic works.
+
+I quite enjoyed the process of creating this random drink generator, and intend to leave the ability to have the table be randomly populated on the site.
+
+>[!info] TODO: Upload some of your favorite randomly-generated drinks to show off here.
+
+# Pour Into Glass
+One piece of the project I really enjoyed was creating the logos for the different types of glass. There were 14 different types of glass, all of which I created icons for in Keynote:
+
+<img src='/images/projects/periodic-table-of-drinks/glass-icons-labeled-white.png' style={{ display: 'block', width: '100%', objectFit: 'contain' }} />
+
+Not too shabby considering that isn't really what Keynote is for, but hey, it's a tool I'm very familiar with, and it got the job done just fine.
