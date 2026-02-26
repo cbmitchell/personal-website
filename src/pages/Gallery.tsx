@@ -12,7 +12,7 @@ export function Gallery() {
       <Typography variant="h1" gutterBottom>Gallery</Typography>
       <Stack spacing={3}>
         {posts.map((post) => (
-          <GalleryCard key={post.slug} post={post} />
+          <GalleryCard key={post.slug} post={post} maxPreviewImages={6} />
         ))}
       </Stack>
     </Box>

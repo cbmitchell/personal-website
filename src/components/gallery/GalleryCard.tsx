@@ -72,9 +72,8 @@ export function GalleryCard({ post, maxPreviewImages }: GalleryCardProps) {
           }}
         >
           <GalleryImageStack
-            images={post.images}
+            images={post.previewImages}
             maxImages={maxPreviewImages}
-            previewImages={post.previewImages}
             containerWidth={imageAreaWidth}
             availableWidth={availableWidth}
             onHoverChange={setHovered}

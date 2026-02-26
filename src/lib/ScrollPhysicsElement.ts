@@ -189,6 +189,9 @@ export class ScrollPhysicsElement {
   private splatRecoverySpeed: number;
   private splatFrame: number;
 
+  // Preloaded images (kept in memory to ensure browser caches all frames)
+  private preloadedImages: HTMLImageElement[];
+
   // rAF handle
   private rafId: number | null;
 
@@ -258,6 +261,9 @@ export class ScrollPhysicsElement {
     this.splatRecoverySpeed = cfg.splatRecoverySpeed;
     this.splatFrame = 0;
 
+    // Preloaded images
+    this.preloadedImages = [];
+
     // rAF handle
     this.rafId = null;
 
@@ -272,7 +278,23 @@ export class ScrollPhysicsElement {
     this.forceIntensityLevels = this.generateForceThresholds();
     this.currentFramePath = this.imageSrc(this.frames.neutral);
     this.element.src = this.currentFramePath;
+    this.preloadFrames();
     this.animate();
+  }
+
+  private preloadFrames(): void {
+    const filenames = [
+      this.frames.neutral,
+      ...this.frames.upward,
+      ...this.frames.downward,
+      ...this.frames.upwardSplat,
+      ...this.frames.downwardSplat,
+    ];
+    this.preloadedImages = filenames.map((filename) => {
+      const img = new Image();
+      img.src = this.imageSrc(filename);
+      return img;
+    });
   }
 
   /** Stop the animation loop. Call this before unmounting. */

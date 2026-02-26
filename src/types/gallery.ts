@@ -3,8 +3,7 @@ import type { ComponentType } from 'react'
 export interface GalleryFrontmatter {
   title: string
   description: string
-  images: string[]
-  previewImages?: string[]
+  previewImages: string[]
   order?: number
 }
 

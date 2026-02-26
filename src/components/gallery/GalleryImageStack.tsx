@@ -5,7 +5,6 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 interface GalleryImageStackProps {
   images: string[]
   maxImages?: number
-  previewImages?: string[]
   containerWidth: number
   availableWidth?: number
   onHoverChange?: (hovered: boolean) => void
@@ -51,20 +50,13 @@ function computePositions(imageWidths: number[], targetWidth: number): number[] 
 export function GalleryImageStack({
   images,
   maxImages,
-  previewImages,
   containerWidth,
   availableWidth,
   onHoverChange,
 }: GalleryImageStackProps) {
   const canHover = useMediaQuery('(hover: hover) and (pointer: fine)')
   const [hovered, setHovered] = useState(false)
-  let displayImages: string[]
-
-  if (previewImages && previewImages.length > 0) {
-    displayImages = maxImages ? previewImages.slice(0, maxImages) : previewImages
-  } else {
-    displayImages = maxImages ? images.slice(0, maxImages) : images
-  }
+  const displayImages = maxImages ? images.slice(0, maxImages) : images
 
   const count = displayImages.length
 
@@ -123,6 +115,7 @@ export function GalleryImageStack({
             }}
             src={src}
             alt=""
+            loading="lazy"
             onLoad={handleImageLoad(i)}
             sx={{
               position: 'absolute',
