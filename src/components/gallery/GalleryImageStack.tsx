@@ -60,6 +60,7 @@ export function GalleryImageStack({
 
   const count = displayImages.length
 
+  const containerRef = useRef<HTMLDivElement>(null)
   const imgRefs = useRef<(HTMLImageElement | null)[]>([])
   const [imageWidths, setImageWidths] = useState<number[]>([])
 
@@ -88,6 +89,27 @@ export function GalleryImageStack({
     }
   }, [allLoaded, transitionsReady])
 
+  useEffect(() => {
+    if (!hovered || !canHover) return
+    const handleMouseMove = (e: MouseEvent) => {
+      const el = containerRef.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const expandedWidth = availableWidth ?? containerWidth
+      const outside =
+        e.clientX < rect.left ||
+        e.clientX > rect.left + expandedWidth ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom
+      if (outside) {
+        setHovered(false)
+        onHoverChange?.(false)
+      }
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    return () => document.removeEventListener('mousemove', handleMouseMove)
+  }, [hovered, canHover, availableWidth, containerWidth, onHoverChange])
+
   const targetWidth = hovered && availableWidth ? availableWidth : containerWidth
   const positions = allLoaded
     ? computePositions(imageWidths, targetWidth)
@@ -95,8 +117,8 @@ export function GalleryImageStack({
 
   return (
     <Box
+      ref={containerRef}
       onMouseEnter={() => { if (canHover) { setHovered(true); onHoverChange?.(true) } }}
-      onMouseLeave={() => { if (canHover) { setHovered(false); onHoverChange?.(false) } }}
       sx={{
         position: 'relative',
         width: '100%',
