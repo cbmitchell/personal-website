@@ -3,7 +3,7 @@ title: Periodic Table of Drinks
 description: An online periodic table chock-full of delicious (or ridiculous) drink recipes
 image: /images/projects/periodic-table-of-drinks/periodic-table-of-drinks.png
 githubUrl: https://github.com/cbmitchell/periodic-table-of-drinks
-deploymentUrl: https://cbmitchell.github.io/periodic-table-of-drinks/
+deploymentUrl: https://periodictableofdrinks.com
 showDemo: true
 tags:
   - TypeScript
@@ -29,7 +29,7 @@ So, with my brother as my sole stakeholder, I set out to create the perfect fram
 As I worked on the project, I consistently checked in with my brother, asking him to make clarifications about the requirements of the project. Eventually, I created a fleshed out list of requirements and then had him review it. When he signed off, I set to work laying down code.
 
 <img src='/images/projects/periodic-table-of-drinks/drink-cell-design.png' style={{ display: 'block', width: '100%', objectFit: 'contain' }} />
-
+<br/>
 Even as I continued to work on the project, though, I would occasionally send my brother updates on my progress, each time asking him for feedback incase something looked like it needed tweaking. As someone with years of industry experience working with stakeholders to produce software products, and even more years of experience knowing my brother, I would have been suspicious if he'd consistently responded saying that everything looked good. Like me, he bears the curse of perfectionism, and I've known him to be quite exacting, detail-oriented, and opinionated in order to reach his specific vision for projects like this one. I can relate.
 
 However, our back and forth for creating this project was surprisingly smooth. Almost suspiciously smooth... Normally, when a stakeholder consistantly gives me generic, unspecific approvals, it's a red flag. They typically *do* have issues with the design (nearly all stakeholders do), but they either haven't looked at things closely enough to realize it, or they simply don't have a solid grasp on what they really want. Once the stakeholder finally *does* take the time to solidify their desires and then carefully compare them with what you've shown them, they often surprise you with sudden requests to change things you'd formerly had their approval on. That's just the nature of the beast, and while there *are* strategies that someone in my position can employ to avoid these surprises and to mitigate wasted time & effort, this friction will always be present when creating something. Hell, even when I'm my *own* stakeholder on something, this happens.
@@ -44,14 +44,33 @@ At a certain point, I had finished most of the coding for the actual table itsel
 
 The way things are set up, drinks data is passed into the table via a `drinkData` variable. But, if any of the cells in the periodic table aren't included in that data, those cells will be [automatically filled](https://github.com/cbmitchell/periodic-table-of-drinks/blob/e65ae5f4d9cbfc5ec9d760af7cff05c5b38d7a6d/src/App.tsx#L11) with randomly-generated drinks instead. The randomization logic lives [here](https://github.com/cbmitchell/periodic-table-of-drinks/blob/main/src/utils/randomizers.ts), and is more robust than one might expect. It combines various [predetermined parts](https://github.com/cbmitchell/periodic-table-of-drinks/blob/main/src/utils/randomizerParts.ts) in order to generate a random drink.
 >[!info] Eventually, I'll probably update this post with a brief explaner for how the randomization logic works.
+> It actually got pretty complicated after I decided I didn't want it to be just completely random, but again, that's a topic for another post.
 
-I quite enjoyed the process of creating this random drink generator, and intend to leave the ability to have the table be randomly populated on the site.
-
->[!info] TODO: Upload some of your favorite randomly-generated drinks to show off here.
-
+I quite enjoyed the process of creating this random drink generator, and even though the original purpose of it was just a fun little way to populate the table with dummy test data, I ultimately decided to leave the option to randomize the table.
 # Pour Into Glass
 One piece of the project I really enjoyed was creating the logos for the different types of glass. There were 14 different types of glass, all of which I created icons for in Keynote:
 
 <img src='/images/projects/periodic-table-of-drinks/glass-icons-labeled-white.png' style={{ display: 'block', width: '100%', objectFit: 'contain' }} />
 
+I later also added an icon to represent recipes for making **punch**. Up to this point, I'd been creating all the glass silhouettes to be to scale relative to one-another, meaning I'd need to get creative since a punch bowl at that scale wouldn't fit my layout. Ultimately, I settled on making the icon a ladle. Sure it's not what you drink punch out of, but punch *does go in it*, and it's iconographic enough to effectively serve its purpose. Not only that, but it *just* fit the relative sizing scheme.
+
+<img src='/images/projects/periodic-table-of-drinks/punch.png' style={{ display: 'block', width: '25%', objectFit: 'contain', margin: 'auto' }} />
+
+
+
 Not too shabby considering that isn't really what Keynote is for, but hey, it's a tool I'm very familiar with, and it got the job done just fine.
+
+# Garnish With Customization
+After I finished creating what I considered to be a serviceable version of the site, and having successful deployments of it on GitHub Pages, I realized that the project deserved 2 things to really zhuzh it up: a sleek new favicon and its own custom domain.
+
+For the favicon, I'd already been using this logo, which I'd originally created to serve as the image which would display when sharing a link to the site. I then also used it as the favicon during development.
+
+<img src='/images/projects/periodic-table-of-drinks/ptod-logo-large.png' style={{ display: 'block', width: '50%', objectFit: 'contain', margin: 'auto' }} />
+<br/>
+However, that logo didn't read well when shrunk down to favicon size, so I decided to create this new logo instead. Just 2 minutes in Keynote yielded this:
+
+<img src='/images/projects/periodic-table-of-drinks/ptod-favicon-large.png' style={{ display: 'block', width: '50%', objectFit: 'contain', margin: 'auto' }} />
+<br/>
+Much better. Balanced, readable when tiny, and relevant to the project. The perfect thing to garnish the site.
+
+That just left the domain. As chance would have it, periodictableofdrinks.com was available, so I snatched it up and quickly had GitHub Pages configured to serve the project from that new domain. This was important since I knew my brother would want to show this project off to people probably in his own field, which, at this point in time, would mean they'd largely be academics, and from my own teaching experience, I know that academics have a keen eye for detail. `periodictableofdrinks` would be a much cleaner fit than `cbmitchell.github.io/periodic-table-of-drinks`. My brother, upon being informed that I'd put the project up on the new domain, graciously offered to cover half the cost of purchasing the domain.
