@@ -1,0 +1,55 @@
+---
+title: "Personal Site Requirements"
+date: "2026-02-13"
+excerpt: "A peek behind the curtain at the high-level planning I did for creating this site"
+tags: ["personal_website", "PRD"]
+readingTime: "5-7 min read"
+---
+
+As I build out this site, it's important to keep in mind what my primary requirements for the site are. These requirements will ultimately inform my decisions around how the site is designed. Thus, consider this blog post a somewhat informal PRD for this website.
+# Overall Goals for This Site
+- **Showcase My Abilities**
+	- Most of the other goals stem from this one. This site isn't really for my personal use as much as it is for others to learn about me and see what I can do.
+- **Allow the Right People to Easily Contact Me**
+	- I'll have an email button in the navigation menu for the site which can be easily used to contact me, but I also want a page to allow visitors (human ones) to request a copy of my Resumé.
+- **Give Visitors a Clear Idea of Who I Am (i.e. Someone Cool)**
+	- This site should be very uniquely ***me***. It should have a very authentic vibe (for lack of a better term), and should embody a lot of the traits prevelant in much of my work, both professional and personal.
+- **Keep Things Secure**
+	- Each passing day it only becomes more important to ensure that anything you make public on the web is thoroughly and thoughtfully secured. Not only would it reflect poorly on me if my site wasn't secure, but it would also incur risk of having the site be attacked. Better safe than sorry.
+- **Keep Design Reactive**
+	- Mobile view is important. This site is like a business card. People should be able to visit it casually at any time and have a good, intentional experience. Mobile will be crucial for this.
+
+Now, bearing all those high-level, purpose-focused requirements in mind, let's focus on the lower-level feature requirements that will support them.
+# Features for MVP
+- **Links to My Other Online Resources**
+	- This includes LinkedIn, GitHub, and Gmail.
+	- These are of high importance, and should thus be very easy to find from nearly anywhere on the site. These shoudl likely be included in the navbar or whatever other navigation UI I opt for.
+- **Simple Structure & Easy Navigation**
+	- A navbar should suffice for this. Site will be split into several different pages, each with its own purpose. Pages are listed below.
+- **Home Page**
+	- Landing page where visitors will arrive. Should make a strong impression, and navigation from it should be simple and obvious.
+- **About Page**
+	- A page for giving an overview of what this site is, who I am, and how visitors can most effectively navigate the site to find what they're looking for. Potentially redundant, but that'll be assessed later.
+- **Blog Page**
+	- Blog for posting whatever I want. Initialized with a post about the blog itself.
+- **Projects Page**
+	- Portfolio of some of my personal coding projects I want to show off. Should link to individual blog-like pages for each project where visitors can find technical details and descriptions of the project.
+- **Resumé Page**
+	- I don't want to just post my resumé raw on the internet for anyone to see. This page will allow visitors (ideally only human ones) to request a copy of my resumé. It should gather basic information about the requester, and should notify me with that information when a request is made.
+- **Gallery**
+	- Not MVP, but still something I want, as visual art and graphic design are very important to me as expressive media, practical assets, and a means of relaxation. Page for showing off visual art I've created, from generated fractals to watercolor paintings. Potentially music at some point, but that's for way later.
+# Technical Requirements
+I won't get too into the weeds here on each and every feature listed above, but I will cover some of the overarching design decisions. Several other design decisions will likely get their own blog posts.
+- **Site will be a SPA written in React**
+	- React Router should make this straightforward.
+	- SPA fits with the navigation approach I settled on, and the page-based structure I laid out above.
+	- React is familiar to me, has a development workflow that I like, is relatively in-demand, and has good third-party libraries I can pull from, with Material UI likely being chief among them.
+	- This will make designing for mobile easier.
+	- This will also make theming and styling simplified. I can leverage MUI's breakpoint system to account for mobile layout.
+- **No plans for a backend *yet***
+	- All content will be hosted client-side for the time being while I get things up and running.
+	- Should keep things logically separated and maintain distinct layers so that it will be easy to swap in a backend later on if I opt for that.
+	- Note that I later ended up changing this and adding a CDK backend, which I'll have a separate blog post for.
+- **Deep content (blog posts, gallery posts, project posts) will be stored in MDX format.**
+	- I'm already familiar with markdown syntax and write most of my notes in it. MDX would let me leverage that familiarity while also weaving in JSX objects to further enhance the posts. This will be useful for things like live demos on project posts or showing images in gallery posts.
+	- I'll have to add some plugins to ensure I have access to the flavors of markdown that I like. I checked NPM, and found that such plugins exist and seem reliable, so that shouldn't be an issue.
