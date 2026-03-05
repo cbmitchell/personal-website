@@ -21,7 +21,7 @@ export function About() {
         sx={{
           minHeight: '1000dvh',
           background:
-            'repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(255,255,255,0.07) 100px, rgba(255,255,255,0.07) 200px)',
+            'repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(255,255,255,0.07) 200px, rgba(255,255,255,0.07) 200px)',
         }}
       >
         <UnderConstruction />
@@ -38,15 +38,20 @@ export function About() {
         numFrames={10}
         scrollContainerRef={scrollContainerRef}
         anchorUpperScrollPosition={380}
-        anchorLowerScrollPosition={7500}
+        anchorLowerScrollPosition={6500}
         mobileOverrides={{
+          accelerationSmoothingFactor: 0.2,
+          velocitySmoothingFactor: 0.18,
           responsiveness: 0.2,
           mass: 0.3,
+          accelerationWeight: 1.0,
           velocityWeight: 1.0,
           forceThresholdMultiplier: 2,
-          thresholdBuffer: 0.35,
+          thresholdBuffer: 0.45,
           splatSeverity: 0.002,
           splatRecoverySpeed: 0.25,
+          anchorUpperScrollPosition: 200,
+          anchorLowerScrollPosition: 5600,
         }}
       />
     </Box>
