@@ -1,0 +1,106 @@
+---
+title: "Utilizing CDK For This Site"
+date: "2026-02-16"
+excerpt: "Explaining the what, why, & how of using CDK to set up this site's backend"
+tags: ["personal_website", "devlog", "CDK", "backend"]
+readingTime: "10-12 min read"
+---
+
+## Table of Contents
+
+I'm still in the process of building the site at the moment (when I first wrote the draft for this blog post, I was [right here](https://github.com/cbmitchell/personal-website/commit/863eadcdb9dcf2ae676b79dbe5d0024f2094525a)), and I just finished building out a backend for this site using AWS CDK.
+
+I wanted to make a brief post just to explain the changes I made, why I made them, and how I made them. Some of this will echo the comments I left on the [PR I made with these CDK changes](https://github.com/cbmitchell/personal-website/pull/1).
+# New CDK Infrastructure
+> [!info] The following was copied [directly from my PR](https://github.com/cbmitchell/personal-website/pull/1#issue-3945269609) with some hyperlinks added to it.
+
+See the [stack file](https://github.com/cbmitchell/personal-website/blob/863eadcdb9dcf2ae676b79dbe5d0024f2094525a/infra/lib/contact-api-stack.ts) for an overview of what was added, but here are the main things:
+- I [added some secrets](https://github.com/cbmitchell/personal-website/blob/863eadcdb9dcf2ae676b79dbe5d0024f2094525a/infra/lib/contact-api-stack.ts#L19-L22) to secure the keys that I'm using for third-party services (like Cloudflare, which is providing the [turnstile I'm using for user verification](https://github.com/cbmitchell/personal-website/blob/863eadcdb9dcf2ae676b79dbe5d0024f2094525a/src/pages/Resume.tsx#L102-L110)).
+- I added a [lambda function](https://github.com/cbmitchell/personal-website/blob/863eadcdb9dcf2ae676b79dbe5d0024f2094525a/infra/lib/contact-api-stack.ts#L24-L48) which will be invoked whenever someone submits the form to request a resumé. It will...
+	- [Verify the submission with Cloudflare turnstile](https://github.com/cbmitchell/personal-website/blob/863eadcdb9dcf2ae676b79dbe5d0024f2094525a/infra/lambda/contact/index.ts#L15-L41)
+	- [Use AWS SES](https://github.com/cbmitchell/personal-website/blob/863eadcdb9dcf2ae676b79dbe5d0024f2094525a/infra/lambda/contact/index.ts#L89-L102) to send an email [to my email address](https://github.com/cbmitchell/personal-website/blob/863eadcdb9dcf2ae676b79dbe5d0024f2094525a/infra/cdk.json#L5) with the submitted form data
+That's it for now. Pretty light for the time being, but that's not a bad thing. Now that I have that infrastructure up and running, it will be easy to expand upon it as I build out other features of the site and make enhancements.
+# Why Opt for CDK?
+Good question. There are several other ways I could've handled this, and I considered each one, but eventually decided to go the CDK route. To explain, we need to bear in mind the requirements and priorities I had for this site, which I outlined in my [Personal Site Requirements blog post](/blog/site-requirements). I'll be referring back to those, so it's worth skimming them if you haven't already. If you're *really* in a hurry, just focus on the part about the Resumé page, as that part is the most relevant to my initial decision to use CDK.
+## Implementing the Resumé Page
+This page is a pretty straightforward one when it comes to online forms. All it's supposed to do is get the requested information from a visitor and then shoot me an email notifying me that my resumé was requested along with the information provided in the form. However, making sure this page remains secure is potentially more complex than with any other page on the site so far since it integrates with another service to send the emails.
+
+Let's go through some of the approaches I considered for implementing this feature and weigh the pros and cons...
+### Approach 1: Simple Client Email Invocation
+Simply put a button on the page like this:
+```tsx
+const to = 'chrisbeckermitchell@gmail.com'
+const subject = encodeURIComponent('Resume Request')
+const body = encodeURIComponent(
+    `Hello Chris,
+
+    I was very impressed by your website 
+    and would like to request a copy of your resumé.`
+)
+
+<a href=`mailto:${to}?subject=${subject}&body=${body}`>
+  Request my resumé
+</a>
+```
+
+Painfully simple. In fact, here, I'll add such a button to this very page:
+<a href="mailto:chrisbeckermitchell@gmail.com?subject=Resume%20Request&body=See?%20Easy.">
+Request my resumé
+</a>
+
+Pros:
+- Simple – takes less time & is easy to maintain
+- Virtually no overhead whatsoever
+- Virtually no attack surface
+- No secrets or keys or verification necessary
+- Automatically get the requester's email address (unless they spoof it but there's not much that can be done to prevent that)
+
+Cons:
+- *Too* simple to impress – Doesn't do much to demonstrate my skills/proficiencies. This *is* a portfolio website after all.
+- Clunky UX – Requester might not expect a whole other application to pop up when they hit the button – pulls them out of the site and breaks up the flow
+- Unprofessional – Enterprise websites wouldn't use this approach
+
+If the only thing I was worried about was getting the site functional as quickly as possible, I would have gone with this approach. All the pros listed above are very attractive, after all, and simple is often times a good thing. However, I want this site to be both professional as well as a technical showcase of some of my abilities, and this approach didn't meet those criteria as well as the other, more complex approaches.
+### Approach 2: Third-Party Email Service
+This was the first approach I [actually implemented](https://github.com/cbmitchell/personal-website/commit/5d6dee515be49a96da7cbd0a02746e8cb257738c). It relied on the EmailJS API to send emails from a utility email address I set up (not using my real email for obvious security reasons, especially since creating a utility Gmail account is completely free & takes very little setup time).
+
+Pros:
+- Moderately simple
+- Some third-party overhead, but still nothing too heavy
+- Seamless UX – No sudden email windows ripping the requester away from the site
+- Free (or so I thought) – EmailJS allows up to 200 emails/month without charging
+
+Cons:
+- More overhead than the first approach
+- Limited number of emails per month
+- Very vulnerable unless I pay a monthly subscription fee
+	- My public key was provided via environment variables and bundled by Vite, meaning it was visible from the client side if someone were to crack open the inspector and go find it. This would allow them to make requests to EmailJS pretending to be me and potentially abuse my account. This was undesirable not only because it could use up my 200 emails/month quota, but also because I don't want potentially malicious emails being traced back to an email account I own.
+	- Fortunately, EmailJS allows for domain whitelisting. This means that only requests with my public key *and made from my site* (or at least *claiming* to be made from my site) would be serviced. Still not bulletproof, but another layer of protection that would likely block most bots.
+		- *Unfortunately*, said domain filtering is only available at the *paid* tier, which is something I only realized after implementing it the first time. I wasn't about to start paying a subscription for this when I happen to know how to implement this sort of thing myself. Also, I'm still surprised that EmailJS doesn't include this in the free tier. I know they have to make money somehow, but making security a paid feature feels unwise. You shouldn't encourage your users to utilize your service insecurely.
+### Approach 3: CDK Stack With Lambda & SES
+This is the approach I [ultimately went with](https://github.com/cbmitchell/personal-website/pull/1), and the one that's currently implemented at time of writing. It uses API Gateway, Lambda, SES, & Secrets Manager to handle not only the Cloudflare turnstile, but also the sending of emails to my email address when a request is made for my resumé.
+
+Pros:
+- Showcases at least some of my CDK expertise & experience
+- Much more secure than using a third-party email service like EmailJS
+- Secrets Manager allows me to securely use the Cloudflare turnstile to its full extent
+- CDK means the infra lives in the codebase alongside the rest of the code, providing a persistent record of what I set up, how I set it up, and how it might change over time.
+- Integrates well into the CI/CD setup I already had, meaning CDK infra changes could just be deployed in a similar fashion.
+- SES lets me verify my `chrisbeckermitchell.com` domain so that I can use it to send emails
+- Gives me the groudwork for implementing more complex backend support for other features of this site moving forward
+	- Some example enhancements that I'd further leverage this new CDK backend for:
+		- Virtual guestbook
+		- Storing content like blog posts or gallery posts (so that I wouldn't need to redeploy the site in order to update those sorts of things)
+		- Enhanced logging/monitoring
+		- CI/CD improvements using AWS CodeDeploy
+		- Record user interaction to figure out where further improvements should be made
+
+Cons:
+- Not free. Still, given my use case & expected volume, should only cost me cents per month.
+	- I also immediately set up a budget through AWS Console which will alert me if my costs in the span of a single month ever exceed $1. I don't expect this alert to ever fire.
+- More involved to set up & maintain, but in my case, that's actually more of a pro than a con. Besides, I'm already familiar with how to do this.
+- Still introduces some attack surface, but not much, and redundancies mitigate the risk of abuse.
+## Conclusion
+Based on the pros and cons above, the choice was clear. In the end, it didn't take long to get myself up and running with a CDK backend, and things have been working like a charm ever since. If/When I make future updates to my CDK stack in order to build out enhancements, I'll be sure to make blog posts about them and tag them with "`CDK`" like I did with this post.
+
+Thanks for reading, and hey, if you're here, don't let all that CDK infrastructure go to waste! Go hit up my [Resumé page](/resume) and send me an email letting me know you've read through this post! I'll surely get a kick out of it.
