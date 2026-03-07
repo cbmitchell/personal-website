@@ -21,7 +21,7 @@ export function About() {
         sx={{
           minHeight: '1000dvh',
           background:
-            'repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(255,255,255,0.07) 200px, rgba(255,255,255,0.07) 200px)',
+            'repeating-linear-gradient(0deg, transparent, transparent 200px, rgba(255,255,255,0.07) 200px, rgba(255,255,255,0.07) 400px)',
         }}
       >
         <UnderConstruction />
@@ -40,7 +40,7 @@ export function About() {
         anchorUpperScrollPosition={380}
         anchorLowerScrollPosition={6500}
         mobileOverrides={{
-          accelerationSmoothingFactor: 0.2,
+          accelerationSmoothingFactor: 0.18,
           velocitySmoothingFactor: 0.18,
           responsiveness: 0.2,
           mass: 0.3,
