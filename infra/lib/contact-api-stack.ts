@@ -6,6 +6,7 @@ import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2'
 import * as integrations from 'aws-cdk-lib/aws-apigatewayv2-integrations'
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager'
 import * as iam from 'aws-cdk-lib/aws-iam'
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as path from 'path'
 
 export class ContactApiStack extends cdk.Stack {
@@ -25,7 +26,7 @@ export class ContactApiStack extends cdk.Stack {
     const contactFn = new nodejs.NodejsFunction(this, 'ContactHandler', {
       entry: path.join(__dirname, '..', 'lambda', 'contact', 'index.ts'),
       handler: 'handler',
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: 256,
       timeout: cdk.Duration.seconds(15),
       environment: {
@@ -64,6 +65,42 @@ export class ContactApiStack extends cdk.Stack {
         'ContactIntegration', contactFn
       ),
     })
+
+    // Analytics DynamoDB table
+    const analyticsTable = new dynamodb.Table(this, 'AnalyticsEvents', {
+      tableName: 'PersonalSiteAnalytics',
+      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+      timeToLiveAttribute: 'ttl',
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    })
+
+    // Analytics Lambda
+    const analyticsFn = new nodejs.NodejsFunction(this, 'AnalyticsHandler', {
+      entry: path.join(__dirname, '..', 'lambda', 'analytics', 'index.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_22_X,
+      memorySize: 128,
+      timeout: cdk.Duration.seconds(5),
+      environment: { TABLE_NAME: analyticsTable.tableName },
+      bundling: { externalModules: ['@aws-sdk/*'] },
+    })
+
+    analyticsTable.grantWriteData(analyticsFn)
+
+    httpApi.addRoutes({
+      path: '/analytics',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('AnalyticsIntegration', analyticsFn),
+    })
+
+    // Throttle the API to limit abuse
+    const stage = httpApi.defaultStage?.node.defaultChild as apigwv2.CfnStage
+    stage.defaultRouteSettings = {
+      throttlingBurstLimit: 50,
+      throttlingRateLimit: 10,
+    }
 
     new cdk.CfnOutput(this, 'ApiUrl', {
       value: httpApi.apiEndpoint,

@@ -2,8 +2,11 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import { Navbar } from './components'
 import { About, Blog, BlogPost, Gallery, GalleryPage, Home, ProjectPage, Projects, Resume } from './pages'
+import { useAnalytics } from './hooks/useAnalytics'
 
 export function App() {
+  useAnalytics()
+
   return (
     <Box sx={{ minHeight: '100dvh' }}>
       <Navbar />
