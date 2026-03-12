@@ -10,6 +10,7 @@
 
 ## Tech Stack
 
+### Frontend
 - React 19 + TypeScript (strict mode)
 - Vite 5 for bundling
 - React Router v7 for routing
@@ -20,18 +21,33 @@
   - Rehype plugins: slug, callouts (Obsidian theme), pretty-code (Shiki, github-dark)
 - Cloudflare Turnstile for bot protection on forms
 
+### Backend (CDK Infrastructure)
+- AWS CDK v2 (TypeScript) for infrastructure-as-code
+- AWS HTTP API Gateway — single API serving all backend routes
+- AWS Lambda (Node.js 22.x) — serverless handlers for contact and analytics
+- AWS DynamoDB — analytics event storage (90-day TTL)
+- AWS SES — transactional email for contact form submissions
+- AWS Secrets Manager — stores Turnstile secret key
+- Zod — runtime schema validation in Lambda handlers
+
 ## Project Structure
 
+- `infra/` — CDK infrastructure (see CDK Infrastructure section)
 - `src/pages/` — Route-level page components (one per route)
 - `src/components/` — Reusable UI components, organized by feature:
-  - `src/components/blog/` — BlogCard, BlogLayout, mdxMapping
+  - `src/components/blog/` — BlogCard, BlogLayout, Heading, mdxMapping
   - `src/components/projects/` — ProjectCard, ProjectLayout
-  - `src/components/gallery/` — GalleryCard, GalleryImageStack
+  - `src/components/gallery/` — GalleryCard, GalleryImageList, GalleryImageStack, GalleryLayout
+  - Root-level components: Hero, Navbar, SocialLinks, UnderConstruction, ScrollPhysicsImage, ViewportPerspectiveBox
 - `src/lib/` — Content loaders and standalone engines:
   - `blog.ts`, `projects.ts`, `gallery.ts` — MDX content loading via `import.meta.glob`
   - `ScrollPhysicsElement.ts` — Scroll-responsive animation engine (standalone class)
-- `src/hooks/` — Custom React hooks (`useScrollPhysics`)
-- `src/types/` — TypeScript type definitions (`blog.ts`, `project.ts`, `gallery.ts`)
+- `src/hooks/` — Custom React hooks:
+  - `useAnalytics.ts` — Pageview + duration tracking (HTTPS-only, used in App.tsx)
+  - `useContentBySlug.ts` — Generic lazy content loader by slug
+  - `useHashScroll.ts` — URL hash-based scroll navigation
+  - `useScrollPhysics.ts` — Scroll animation controller (uses ScrollPhysicsElement)
+- `src/types/` — TypeScript type definitions (`blog.ts`, `project.ts`, `gallery.ts`, `mdx.ts`)
 - `src/content/` — MDX content files:
   - `src/content/blog/` — Blog posts
   - `src/content/projects/` — Project write-ups
@@ -53,21 +69,58 @@ MDX frontmatter is extracted via `remark-mdx-frontmatter` and typed per content 
 | Path | Page | Description |
 |------|------|-------------|
 | `/` | Home | Hero section with animated name/subtitle videos |
-| `/about` | About | Scroll physics animation demo (under construction) |
+| `/about` | About | ViewportPerspectiveBox + scroll-driven physics animation |
 | `/blog` | Blog | Blog post listing |
 | `/blog/:slug` | BlogPost | Individual blog post |
 | `/projects` | Projects | Project grid |
 | `/projects/:slug` | ProjectPage | Individual project write-up |
 | `/gallery` | Gallery | Gallery listing with stacked image previews |
+| `/gallery/:slug` | GalleryPage | Individual gallery item detail |
 | `/resume` | Resume | Contact form with Turnstile CAPTCHA |
 | `*` | — | Redirects to `/` |
+
+## CDK Infrastructure (`infra/`)
+
+- **Entry point**: `infra/bin/infra.ts`
+- **Main stack**: `infra/lib/contact-api-stack.ts` — `PersonalSiteContactApi`
+- **Lambda handlers**:
+  - `infra/lambda/contact/index.ts` — validates form input, verifies Turnstile token, sends email via SES
+  - `infra/lambda/analytics/index.ts` — validates origin, writes pageview/duration events to DynamoDB
+- **API routes** (HTTP API, rate-limited to 10 req/s / burst 50):
+  - `POST /contact` → ContactHandler
+  - `POST /analytics` → AnalyticsHandler
+- **DynamoDB table**: `PersonalSiteAnalytics` — PAY_PER_REQUEST, 90-day TTL, RETAIN removal policy
+  - Partition key: `pk` (`DATE#YYYY-MM-DD`), Sort key: `sk` (`{TYPE}#{ISO_TIMESTAMP}#{UUID}`)
+- **Secrets Manager**: `personal-site/turnstile-secret-key` — Turnstile API secret (read by ContactHandler)
+- **CORS**: Restricted to `https://chrisbeckermitchell.com`
+- **CDK context** (`infra/cdk.json`): `senderEmail`, `recipientEmail`, `allowedOrigins`
+- **Scripts**: `build` (tsc), `synth` (cdk synth), `deploy` (cdk deploy), `diff` (cdk diff)
+
+## Analytics
+
+The `useAnalytics` hook (called once in `App.tsx`) tracks route changes:
+- **pageview** event: path, referrer, sessionId, language, viewport dimensions, User-Agent
+- **duration** event: path, durationMs, sessionId (sent via `sendBeacon()` on unmount)
+- Bails out when `window.isSecureContext` is false (no tracking over HTTP)
+- Session ID generated with `crypto.randomUUID()` and stored in `sessionStorage`
+- Sends to `${VITE_CONTACT_API_URL}/analytics`
+
+## Forms & Security
+
+- Resume request form at `/resume` with Cloudflare Turnstile bot protection
+- Test Turnstile key used in development, real key in production
+- Form submission POSTs JSON to `VITE_CONTACT_API_URL/contact`
+
+## Environment Variables
+
+- `VITE_CONTACT_API_URL` — Base URL for the CDK-deployed API (serves both `/contact` and `/analytics`)
+- `VITE_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key (test key in dev)
 
 ## Coding Preferences
 
 - Use functional components with hooks (no class components)
 - TypeScript for all new files
 - Prefer named exports over default exports
-- Keep utilities in separate files under src/utils/
 - Follow existing component patterns for consistency
 - Follow modern best practices whenever possible
 
@@ -77,21 +130,14 @@ MDX frontmatter is extracted via `remark-mdx-frontmatter` and typed per content 
 - **MUI imports**: Use deep imports (`import Box from '@mui/material/Box'`) not named imports from the package root
 - **MDX rendering**: Blog and project layouts share `mdxComponents` from `src/components/blog/mdxMapping.tsx`
 - **Responsive design**: MUI breakpoints (`xs`, `sm`, `md`) for mobile/desktop switching
-- **Environment variables**: `VITE_CONTACT_API_URL`, `VITE_TURNSTILE_SITE_KEY` (uses test key in dev)
-
-## Forms & Security
-
-- Resume request form at `/resume` with Cloudflare Turnstile bot protection
-- Test Turnstile key used in development, real key in production
-- Form submission POSTs JSON to `VITE_CONTACT_API_URL/contact`
 
 ## Deployment
 
-- Deploys automatically on pushes to remote main using GitHub Actions.
+- Frontend deploys automatically on pushes to remote main using GitHub Actions.
+- Backend (CDK) deploys automatically on pushes to main that touch `infra/**` via GitHub Actions (`.github/workflows/deploy-infra.yml`). PRs targeting main run `cdk diff` instead. Can also be deployed manually via `cdk deploy` from `infra/`.
 
 ## TODOs
 
 - About page
   - Considering merging this with Home page, but not sure yet.
   - Will have information about me
-- Gallery detail page (`/gallery/:slug`) — route and page component not yet implemented
