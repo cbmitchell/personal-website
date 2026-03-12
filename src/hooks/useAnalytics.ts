@@ -18,6 +18,9 @@ export function useAnalytics() {
   const pathRef = useRef<string>(location.pathname)
 
   useEffect(() => {
+    // crypto.randomUUID() and other analytics features require a secure context
+    // (HTTPS or localhost). Skip analytics when testing over a local network IP.
+    if (!window.isSecureContext) return
     const sessionId = getSessionId()
     const path = location.pathname
     const referrer = document.referrer || undefined
