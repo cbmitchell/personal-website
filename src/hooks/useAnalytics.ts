@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 
-const API_URL = import.meta.env.VITE_CONTACT_API_URL
+const API_URL = import.meta.env.VITE_API_BASE_URL
 
 function getSessionId(): string {
   let id = sessionStorage.getItem('analyticsSessionId')

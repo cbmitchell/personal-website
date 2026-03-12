@@ -103,17 +103,17 @@ The `useAnalytics` hook (called once in `App.tsx`) tracks route changes:
 - **duration** event: path, durationMs, sessionId (sent via `sendBeacon()` on unmount)
 - Bails out when `window.isSecureContext` is false (no tracking over HTTP)
 - Session ID generated with `crypto.randomUUID()` and stored in `sessionStorage`
-- Sends to `${VITE_CONTACT_API_URL}/analytics`
+- Sends to `${VITE_API_BASE_URL}/analytics`
 
 ## Forms & Security
 
 - Resume request form at `/resume` with Cloudflare Turnstile bot protection
 - Test Turnstile key used in development, real key in production
-- Form submission POSTs JSON to `VITE_CONTACT_API_URL/contact`
+- Form submission POSTs JSON to `VITE_API_BASE_URL/contact`
 
 ## Environment Variables
 
-- `VITE_CONTACT_API_URL` — Base URL for the CDK-deployed API (serves both `/contact` and `/analytics`)
+- `VITE_API_BASE_URL` — Base URL for the CDK-deployed API (serves both `/contact` and `/analytics`)
 - `VITE_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key (test key in dev)
 
 ## Coding Preferences

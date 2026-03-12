@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack'
 import CircularProgress from '@mui/material/CircularProgress'
 import Snackbar from '@mui/material/Snackbar'
 
-const CONTACT_API_URL = import.meta.env.VITE_CONTACT_API_URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 // Use Cloudflare's test key in development (always passes), real key in production
 // See: https://developers.cloudflare.com/turnstile/troubleshooting/testing/
@@ -38,7 +38,7 @@ export function Resume() {
 
     try {
       const formData = new FormData(formRef.current!)
-      const response = await fetch(`${CONTACT_API_URL}/contact`, {
+      const response = await fetch(`${API_BASE_URL}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
