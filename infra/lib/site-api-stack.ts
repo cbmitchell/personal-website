@@ -9,7 +9,7 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as path from 'path'
 
-export class ContactApiStack extends cdk.Stack {
+export class SiteApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
@@ -49,8 +49,8 @@ export class ContactApiStack extends cdk.Stack {
     }))
 
     // HTTP API with CORS
-    const httpApi = new apigwv2.HttpApi(this, 'ContactApi', {
-      apiName: 'PersonalSiteContactApi',
+    const httpApi = new apigwv2.HttpApi(this, 'SiteApi', {
+      apiName: 'PersonalSiteApi',
       corsPreflight: {
         allowOrigins: allowedOrigins,
         allowMethods: [apigwv2.CorsHttpMethod.POST],
@@ -104,7 +104,7 @@ export class ContactApiStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, 'ApiUrl', {
       value: httpApi.apiEndpoint,
-      description: 'Contact API endpoint URL',
+      description: 'API endpoint URL',
     })
   }
 }
