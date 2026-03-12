@@ -1,42 +1,20 @@
 import type { PostFrontmatter, PostMeta, Post } from '../types/blog'
 import type { MDXModule } from '../types/mdx'
+import { buildMetaList, loadBySlug } from './content'
 
 type BlogModule = MDXModule<PostFrontmatter>
 
-// Get all posts with metadata (for listing page)
 export function getAllPosts(): PostMeta[] {
   const modules = import.meta.glob<BlogModule>('../content/blog/*.mdx', {
     eager: true,
   })
 
-  const posts: PostMeta[] = Object.entries(modules).map(([path, module]) => {
-    const slug = path.split('/').pop()?.replace('.mdx', '') ?? ''
-
-    return {
-      ...module.frontmatter,
-      slug,
-    }
-  })
-
-  return posts
+  return buildMetaList(modules)
     .filter((post) => post.published !== false)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
-// Get single post by slug
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   const modules = import.meta.glob<BlogModule>('../content/blog/*.mdx')
-
-  const path = `../content/blog/${slug}.mdx`
-  const loader = modules[path]
-
-  if (!loader) return null
-
-  const module = await loader()
-
-  return {
-    ...module.frontmatter,
-    slug,
-    Content: module.default,
-  }
+  return loadBySlug(modules, '../content/blog', slug)
 }
