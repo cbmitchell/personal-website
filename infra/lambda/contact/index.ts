@@ -28,16 +28,23 @@ async function getTurnstileSecret(): Promise<string> {
 
 async function verifyTurnstile(token: string): Promise<boolean> {
   const secret = await getTurnstileSecret()
-  const response = await fetch(
-    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ secret, response: token }),
-    }
-  )
-  const result = (await response.json()) as { success: boolean }
-  return result.success === true
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+  try {
+    const response = await fetch(
+      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ secret, response: token }),
+        signal: controller.signal,
+      }
+    )
+    const result = (await response.json()) as { success: boolean }
+    return result.success === true
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 const contactRequestSchema = z.object({
