@@ -2,10 +2,11 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda'
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
 import { randomUUID } from 'crypto'
 import { z } from 'zod'
+import { requireEnv } from '../shared/utils'
 
 const db = new DynamoDBClient({})
-const TABLE_NAME = process.env.TABLE_NAME!
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN!
+const TABLE_NAME = requireEnv('TABLE_NAME')
+const ALLOWED_ORIGIN = requireEnv('ALLOWED_ORIGIN')
 const TTL_DAYS = 90
 
 const schema = z.discriminatedUnion('type', [

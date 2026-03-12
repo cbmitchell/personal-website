@@ -6,6 +6,12 @@ import {
 } from '@aws-sdk/client-secrets-manager'
 import { z } from 'zod'
 
+import { requireEnv } from '../shared/utils'
+
+const SENDER_EMAIL = requireEnv('SENDER_EMAIL')
+const RECIPIENT_EMAIL = requireEnv('RECIPIENT_EMAIL')
+const TURNSTILE_SECRET_NAME = requireEnv('TURNSTILE_SECRET_NAME')
+
 const ses = new SESv2Client({})
 const secretsManager = new SecretsManagerClient({})
 
@@ -16,7 +22,7 @@ async function getTurnstileSecret(): Promise<string> {
   if (cachedTurnstileSecret) return cachedTurnstileSecret
   const result = await secretsManager.send(
     new GetSecretValueCommand({
-      SecretId: process.env.TURNSTILE_SECRET_NAME!,
+      SecretId: TURNSTILE_SECRET_NAME,
     })
   )
   if (!result.SecretString) {
@@ -106,8 +112,8 @@ export async function handler(
   try {
     await ses.send(
       new SendEmailCommand({
-        FromEmailAddress: process.env.SENDER_EMAIL!,
-        Destination: { ToAddresses: [process.env.RECIPIENT_EMAIL!] },
+        FromEmailAddress: SENDER_EMAIL,
+        Destination: { ToAddresses: [RECIPIENT_EMAIL] },
         Content: {
           Simple: {
             Subject: { Data: `Resume Request from ${data.name}` },
