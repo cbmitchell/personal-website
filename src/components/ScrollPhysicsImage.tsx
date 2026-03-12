@@ -1,4 +1,4 @@
-import { useRef, useMemo, useLayoutEffect, type CSSProperties, type MutableRefObject, type RefObject } from 'react';
+import { useRef, useMemo, useEffect, type CSSProperties, type MutableRefObject, type RefObject } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { useScrollPhysics } from '../hooks/useScrollPhysics';
@@ -54,12 +54,14 @@ export function ScrollPhysicsImage({
 
   const physicsRef = useScrollPhysics(imgRef, mergedOptions);
 
-  // Expose the instance to the parent if they passed a ref
-  useLayoutEffect(() => {
+  // Expose the instance to the parent if they passed a ref.
+  // Must be useEffect (not useLayoutEffect) so it runs after the physics-creation
+  // useEffect in useScrollPhysics, which is registered first and therefore runs first.
+  useEffect(() => {
     if (externalRef) {
       externalRef.current = physicsRef.current;
     }
-  });
+  }, [externalRef, physicsRef]);
 
   return (
     <div
