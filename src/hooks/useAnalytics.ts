@@ -14,7 +14,7 @@ function getSessionId(): string {
 
 export function useAnalytics() {
   const location = useLocation()
-  const startTimeRef = useRef<number>(Date.now())
+  const startTimeRef = useRef<number>(0)
   const pathRef = useRef<string>(location.pathname)
 
   useEffect(() => {

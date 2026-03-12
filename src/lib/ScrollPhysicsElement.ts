@@ -139,10 +139,8 @@ export class ScrollPhysicsElement {
   // Physics state
   private lastScrollTop: number
   private lastTime: number
-  private scrollVelocity: number
   private smoothedVelocity: number
   private lastSmoothedVelocity: number
-  private scrollAcceleration: number
   private smoothedAcceleration: number
   private acceleration: number
   private netForce: number
@@ -190,7 +188,9 @@ export class ScrollPhysicsElement {
   private splatFrame: number
 
   // Preloaded images (kept in memory to ensure browser caches all frames)
-  private preloadedImages: HTMLImageElement[]
+  // @ts-expect-error TS6133: write-only by design; the assignment holds a
+  // strong reference so the browser does not garbage-collect the images.
+  private _preloadedImages: HTMLImageElement[]
 
   // rAF handle
   private rafId: number | null
@@ -213,10 +213,8 @@ export class ScrollPhysicsElement {
     // Physics state
     this.lastScrollTop = this.getScrollPosition()
     this.lastTime = performance.now()
-    this.scrollVelocity = 0
     this.smoothedVelocity = 0
     this.lastSmoothedVelocity = 0
-    this.scrollAcceleration = 0
     this.smoothedAcceleration = 0
     this.acceleration = 0
     this.netForce = 0
@@ -264,7 +262,7 @@ export class ScrollPhysicsElement {
     this.splatFrame = 0
 
     // Preloaded images
-    this.preloadedImages = []
+    this._preloadedImages = []
 
     // rAF handle
     this.rafId = null
@@ -292,7 +290,7 @@ export class ScrollPhysicsElement {
       ...this.frames.upwardSplat,
       ...this.frames.downwardSplat,
     ]
-    this.preloadedImages = filenames.map((filename) => {
+    this._preloadedImages = filenames.map((filename) => {
       const img = new Image()
       img.src = this.imageSrc(filename)
       return img
@@ -503,12 +501,10 @@ export class ScrollPhysicsElement {
       Math.min(this.maxVelocity, distance / dt),
     )
     this.smoothedVelocity += (rawVel - this.smoothedVelocity) * velAlpha
-    this.scrollVelocity = rawVel
 
     const rawAccel = (this.smoothedVelocity - this.lastSmoothedVelocity) / dt
     this.smoothedAcceleration +=
       (rawAccel - this.smoothedAcceleration) * accelAlpha
-    this.scrollAcceleration = rawAccel
     this.lastSmoothedVelocity = this.smoothedVelocity
 
     const force = this.smoothedAcceleration * this.responsiveness
