@@ -42,10 +42,10 @@ export class ContactApiStack extends cdk.Stack {
     // Grant Lambda permission to read the Turnstile secret
     turnstileSecret.grantRead(contactFn)
 
-    // Grant Lambda permission to send emails via SES
+    // Grant Lambda permission to send emails via SES, scoped to the verified sender identity
     contactFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['ses:SendEmail'],
-      resources: ['*'],
+      resources: [`arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`],
     }))
 
     // HTTP API with CORS
