@@ -68,6 +68,12 @@ export async function handler(
     item.durationMs = { N: String(data.durationMs) }
   }
 
-  await db.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }))
+  try {
+    await db.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }))
+  } catch (err) {
+    console.error({ message: 'DynamoDB write failed', error: err instanceof Error ? err.message : String(err) })
+    return { statusCode: 500, body: '{}' }
+  }
+
   return { statusCode: 200, body: '{}' }
 }

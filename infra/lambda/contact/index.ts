@@ -71,7 +71,17 @@ export async function handler(
 
   const data = result.data
 
-  const turnstileValid = await verifyTurnstile(data.turnstileToken)
+  let turnstileValid: boolean
+  try {
+    turnstileValid = await verifyTurnstile(data.turnstileToken)
+  } catch (err) {
+    console.error({ message: 'Turnstile verification error', error: err instanceof Error ? err.message : String(err) })
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Internal server error' }),
+    }
+  }
+
   if (!turnstileValid) {
     return {
       statusCode: 403,
@@ -86,20 +96,28 @@ export async function handler(
     data.message ? `Message: ${data.message}` : '',
   ].filter(Boolean).join('\n')
 
-  await ses.send(
-    new SendEmailCommand({
-      FromEmailAddress: process.env.SENDER_EMAIL!,
-      Destination: { ToAddresses: [process.env.RECIPIENT_EMAIL!] },
-      Content: {
-        Simple: {
-          Subject: { Data: `Resume Request from ${data.name}` },
-          Body: {
-            Text: { Data: bodyLines },
+  try {
+    await ses.send(
+      new SendEmailCommand({
+        FromEmailAddress: process.env.SENDER_EMAIL!,
+        Destination: { ToAddresses: [process.env.RECIPIENT_EMAIL!] },
+        Content: {
+          Simple: {
+            Subject: { Data: `Resume Request from ${data.name}` },
+            Body: {
+              Text: { Data: bodyLines },
+            },
           },
         },
-      },
-    })
-  )
+      })
+    )
+  } catch (err) {
+    console.error({ message: 'SES send failed', error: err instanceof Error ? err.message : String(err) })
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Failed to send email' }),
+    }
+  }
 
   return {
     statusCode: 200,
