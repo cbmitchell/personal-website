@@ -6,6 +6,12 @@ import {
 } from '@aws-sdk/client-secrets-manager'
 import { z } from 'zod'
 
+import { requireEnv } from '../shared/utils'
+
+const SENDER_EMAIL = requireEnv('SENDER_EMAIL')
+const RECIPIENT_EMAIL = requireEnv('RECIPIENT_EMAIL')
+const TURNSTILE_SECRET_NAME = requireEnv('TURNSTILE_SECRET_NAME')
+
 const ses = new SESv2Client({})
 const secretsManager = new SecretsManagerClient({})
 
@@ -16,7 +22,7 @@ async function getTurnstileSecret(): Promise<string> {
   if (cachedTurnstileSecret) return cachedTurnstileSecret
   const result = await secretsManager.send(
     new GetSecretValueCommand({
-      SecretId: process.env.TURNSTILE_SECRET_NAME!,
+      SecretId: TURNSTILE_SECRET_NAME,
     })
   )
   if (!result.SecretString) {
@@ -28,23 +34,30 @@ async function getTurnstileSecret(): Promise<string> {
 
 async function verifyTurnstile(token: string): Promise<boolean> {
   const secret = await getTurnstileSecret()
-  const response = await fetch(
-    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ secret, response: token }),
-    }
-  )
-  const result = (await response.json()) as { success: boolean }
-  return result.success === true
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+  try {
+    const response = await fetch(
+      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ secret, response: token }),
+        signal: controller.signal,
+      }
+    )
+    const result = (await response.json()) as { success: boolean }
+    return result.success === true
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 const contactRequestSchema = z.object({
   name: z.string().min(1),
   email: z.email(),
   company: z.string().optional(),
-  message: z.string().optional(),
+  message: z.string().max(5000).optional(),
   turnstileToken: z.string().min(1),
 })
 
@@ -71,7 +84,17 @@ export async function handler(
 
   const data = result.data
 
-  const turnstileValid = await verifyTurnstile(data.turnstileToken)
+  let turnstileValid: boolean
+  try {
+    turnstileValid = await verifyTurnstile(data.turnstileToken)
+  } catch (err) {
+    console.error({ message: 'Turnstile verification error', error: err instanceof Error ? err.message : String(err) })
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Internal server error' }),
+    }
+  }
+
   if (!turnstileValid) {
     return {
       statusCode: 403,
@@ -86,20 +109,28 @@ export async function handler(
     data.message ? `Message: ${data.message}` : '',
   ].filter(Boolean).join('\n')
 
-  await ses.send(
-    new SendEmailCommand({
-      FromEmailAddress: process.env.SENDER_EMAIL!,
-      Destination: { ToAddresses: [process.env.RECIPIENT_EMAIL!] },
-      Content: {
-        Simple: {
-          Subject: { Data: `Resume Request from ${data.name}` },
-          Body: {
-            Text: { Data: bodyLines },
+  try {
+    await ses.send(
+      new SendEmailCommand({
+        FromEmailAddress: SENDER_EMAIL,
+        Destination: { ToAddresses: [RECIPIENT_EMAIL] },
+        Content: {
+          Simple: {
+            Subject: { Data: `Resume Request from ${data.name}` },
+            Body: {
+              Text: { Data: bodyLines },
+            },
           },
         },
-      },
-    })
-  )
+      })
+    )
+  } catch (err) {
+    console.error({ message: 'SES send failed', error: err instanceof Error ? err.message : String(err) })
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Failed to send email' }),
+    }
+  }
 
   return {
     statusCode: 200,

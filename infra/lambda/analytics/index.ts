@@ -2,11 +2,12 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda'
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
 import { randomUUID } from 'crypto'
 import { z } from 'zod'
+import { requireEnv } from '../shared/utils'
 
 const db = new DynamoDBClient({})
-const TABLE_NAME = process.env.TABLE_NAME!
+const TABLE_NAME = requireEnv('TABLE_NAME')
+const ALLOWED_ORIGIN = requireEnv('ALLOWED_ORIGIN')
 const TTL_DAYS = 90
-const ALLOWED_ORIGIN = 'https://chrisbeckermitchell.com'
 
 const schema = z.discriminatedUnion('type', [
   z.object({
@@ -68,6 +69,12 @@ export async function handler(
     item.durationMs = { N: String(data.durationMs) }
   }
 
-  await db.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }))
+  try {
+    await db.send(new PutItemCommand({ TableName: TABLE_NAME, Item: item }))
+  } catch (err) {
+    console.error({ message: 'DynamoDB write failed', error: err instanceof Error ? err.message : String(err) })
+    return { statusCode: 500, body: '{}' }
+  }
+
   return { statusCode: 200, body: '{}' }
 }

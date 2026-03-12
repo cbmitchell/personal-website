@@ -17,8 +17,11 @@ export function useContentBySlug<T>(
   useEffect(() => {
     if (!slug) return
 
+    let cancelled = false
+
     fetcher(slug)
       .then((result) => {
+        if (cancelled) return
         if (result) {
           setData(result)
         } else {
@@ -26,11 +29,17 @@ export function useContentBySlug<T>(
         }
       })
       .catch(() => {
+        if (cancelled) return
         setNotFound(true)
       })
       .finally(() => {
+        if (cancelled) return
         setLoading(false)
       })
+
+    return () => {
+      cancelled = true
+    }
   }, [slug, fetcher])
 
   return { data, loading, notFound }

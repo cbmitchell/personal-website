@@ -96,6 +96,7 @@ export function Resume() {
             label="Message (optional)"
             multiline
             rows={4}
+            slotProps={{ htmlInput: { maxLength: 5000 } }}
           />
 
           <Box sx={{ display: 'flex', justifyContent: 'center', minHeight: 65 }}>

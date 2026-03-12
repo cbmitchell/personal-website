@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useLocation } from 'react-router-dom'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Box from '@mui/material/Box'
@@ -25,6 +25,12 @@ const navLinks = [
 
 export function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const { pathname } = useLocation()
+
+  function isActive(to: string): boolean {
+    if (to === '/') return pathname === '/'
+    return pathname === to || pathname.startsWith(to + '/')
+  }
 
   return (
     <>
@@ -33,7 +39,16 @@ export function Navbar() {
         <Toolbar sx={{ justifyContent: 'space-between', px: 4 }}>
           <Box sx={{ display: 'flex', gap: 4 }}>
             {navLinks.map((link) => (
-              <Button key={link.to} component={RouterLink} to={link.to} color="inherit">
+              <Button
+                key={link.to}
+                component={RouterLink}
+                to={link.to}
+                color="inherit"
+                sx={{
+                  borderBottom: isActive(link.to) ? '2px solid currentColor' : '2px solid transparent',
+                  borderRadius: 0,
+                }}
+              >
                 {link.label}
               </Button>
             ))}
@@ -72,6 +87,7 @@ export function Navbar() {
                   component={RouterLink}
                   to={link.to}
                   onClick={() => setDrawerOpen(false)}
+                  selected={isActive(link.to)}
                 >
                   <ListItemText primary={link.label} />
                 </ListItemButton>

@@ -34,6 +34,9 @@ export class SiteApiStack extends cdk.Stack {
         RECIPIENT_EMAIL: recipientEmail,
         TURNSTILE_SECRET_NAME: 'personal-site/turnstile-secret-key',
       },
+      // @aws-sdk/* is excluded from the bundle and provided by the Lambda
+      // Node.js 22.x runtime (AWS SDK v3 is built in). The SDK packages are
+      // listed as devDependencies in package.json for local type-checking only.
       bundling: {
         externalModules: ['@aws-sdk/*'],
       },
@@ -42,10 +45,10 @@ export class SiteApiStack extends cdk.Stack {
     // Grant Lambda permission to read the Turnstile secret
     turnstileSecret.grantRead(contactFn)
 
-    // Grant Lambda permission to send emails via SES
+    // Grant Lambda permission to send emails via SES, scoped to the verified sender identity
     contactFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['ses:SendEmail'],
-      resources: ['*'],
+      resources: [`arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`],
     }))
 
     // HTTP API with CORS
@@ -83,8 +86,11 @@ export class SiteApiStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: 128,
       timeout: cdk.Duration.seconds(5),
-      environment: { TABLE_NAME: analyticsTable.tableName },
-      bundling: { externalModules: ['@aws-sdk/*'] },
+      environment: {
+        TABLE_NAME: analyticsTable.tableName,
+        ALLOWED_ORIGIN: allowedOrigins[0] ?? '',
+      },
+      bundling: { externalModules: ['@aws-sdk/*'] }, // see comment above
     })
 
     analyticsTable.grantWriteData(analyticsFn)
