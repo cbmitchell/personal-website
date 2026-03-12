@@ -45,10 +45,15 @@ export class SiteApiStack extends cdk.Stack {
     // Grant Lambda permission to read the Turnstile secret
     turnstileSecret.grantRead(contactFn)
 
-    // Grant Lambda permission to send emails via SES, scoped to the verified sender identity
+    // Grant Lambda permission to send emails via SES. SES checks IAM authorization
+    // on both the sending identity and any verified recipient identities in the
+    // same account, so both must be included as resources.
     contactFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['ses:SendEmail'],
-      resources: [`arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`],
+      resources: [
+        `arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`,
+        `arn:aws:ses:${this.region}:${this.account}:identity/${recipientEmail}`,
+      ],
     }))
 
     // HTTP API with CORS
