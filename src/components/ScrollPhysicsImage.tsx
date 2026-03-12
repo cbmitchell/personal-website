@@ -78,7 +78,7 @@ export function ScrollPhysicsImage({
     >
       <img
         ref={imgRef}
-        alt=""
+        alt="Scroll-driven physics animation"
         width={size}
         height={size}
         style={{
