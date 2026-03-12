@@ -83,7 +83,10 @@ export class ContactApiStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: 128,
       timeout: cdk.Duration.seconds(5),
-      environment: { TABLE_NAME: analyticsTable.tableName },
+      environment: {
+        TABLE_NAME: analyticsTable.tableName,
+        ALLOWED_ORIGIN: allowedOrigins[0] ?? '',
+      },
       bundling: { externalModules: ['@aws-sdk/*'] },
     })
 

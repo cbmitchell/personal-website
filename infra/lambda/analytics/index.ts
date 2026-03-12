@@ -5,8 +5,8 @@ import { z } from 'zod'
 
 const db = new DynamoDBClient({})
 const TABLE_NAME = process.env.TABLE_NAME!
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN!
 const TTL_DAYS = 90
-const ALLOWED_ORIGIN = 'https://chrisbeckermitchell.com'
 
 const schema = z.discriminatedUnion('type', [
   z.object({
