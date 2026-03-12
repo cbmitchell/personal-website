@@ -51,7 +51,7 @@ const contactRequestSchema = z.object({
   name: z.string().min(1),
   email: z.email(),
   company: z.string().optional(),
-  message: z.string().optional(),
+  message: z.string().max(5000).optional(),
   turnstileToken: z.string().min(1),
 })
 
