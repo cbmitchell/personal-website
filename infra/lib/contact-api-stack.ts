@@ -34,6 +34,9 @@ export class ContactApiStack extends cdk.Stack {
         RECIPIENT_EMAIL: recipientEmail,
         TURNSTILE_SECRET_NAME: 'personal-site/turnstile-secret-key',
       },
+      // @aws-sdk/* is excluded from the bundle and provided by the Lambda
+      // Node.js 22.x runtime (AWS SDK v3 is built in). The SDK packages are
+      // listed as devDependencies in package.json for local type-checking only.
       bundling: {
         externalModules: ['@aws-sdk/*'],
       },
@@ -87,7 +90,7 @@ export class ContactApiStack extends cdk.Stack {
         TABLE_NAME: analyticsTable.tableName,
         ALLOWED_ORIGIN: allowedOrigins[0] ?? '',
       },
-      bundling: { externalModules: ['@aws-sdk/*'] },
+      bundling: { externalModules: ['@aws-sdk/*'] }, // see comment above
     })
 
     analyticsTable.grantWriteData(analyticsFn)
