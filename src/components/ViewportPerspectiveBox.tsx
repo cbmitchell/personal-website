@@ -191,30 +191,3 @@ export function ViewportPerspectiveBox({
   )
 }
 
-export default function App() {
-  return (
-    <div
-      style={{
-        background: '#ffffff',
-        fontFamily: "'Courier New', monospace",
-      }}
-    >
-      {[...Array(5)].map((_, i) => (
-        <div
-          key={i}
-          style={{
-            height: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 24,
-            borderBottom: '1px solid #eee',
-          }}
-        >
-          <ViewportPerspectiveBox />
-        </div>
-      ))}
-    </div>
-  )
-}
