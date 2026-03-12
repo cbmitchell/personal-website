@@ -1,8 +1,10 @@
 import { CSSProperties, useEffect, useRef } from 'react'
 
-const WIDTH = 200
+const WIDTH = 240
 const HEIGHT = 60
-const DEPTH = 120
+const DEPTH = 160
+const BORDER = 3
+const BACK_PLATE_OVERHANG = BORDER - 1
 
 interface Face {
   style: CSSProperties
@@ -65,6 +67,17 @@ const faces: Face[] = [
       background: '#595959',
     },
   },
+  {
+    style: {
+      width: WIDTH + BACK_PLATE_OVERHANG * 2,
+      height: HEIGHT + BACK_PLATE_OVERHANG * 2,
+      top: -BACK_PLATE_OVERHANG,
+      left: -BACK_PLATE_OVERHANG,
+      transform: `rotateY(180deg) translateZ(${DEPTH / 2 + 1}px)`,
+      background: 'black',
+      border: 'none',
+    },
+  },
 ]
 
 const PERSPECTIVE = 800
@@ -77,14 +90,15 @@ interface ViewportPerspectiveBoxProps {
 export function ViewportPerspectiveBox({
   top = 'calc(380px + 50vh)',
 }: ViewportPerspectiveBoxProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const backContainerRef = useRef<HTMLDivElement>(null)
+  const frontContainerRef = useRef<HTMLDivElement>(null)
   const prevOriginRef = useRef<{ x: string; y: string }>({ x: '50%', y: '50%' })
   const rafRef = useRef<number>(0)
 
   useEffect(() => {
     const update = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
+      if (backContainerRef.current) {
+        const rect = backContainerRef.current.getBoundingClientRect()
 
         const boxCX = rect.left + rect.width / 2
         const boxCY = rect.top + rect.height / 2
@@ -105,7 +119,10 @@ export function ViewportPerspectiveBox({
           oyStr !== prevOriginRef.current.y
         ) {
           prevOriginRef.current = { x: oxStr, y: oyStr }
-          containerRef.current.style.perspectiveOrigin = `${oxStr} ${oyStr}`
+          backContainerRef.current.style.perspectiveOrigin = `${oxStr} ${oyStr}`
+          if (frontContainerRef.current) {
+            frontContainerRef.current.style.perspectiveOrigin = `${oxStr} ${oyStr}`
+          }
         }
       }
 
@@ -116,55 +133,61 @@ export function ViewportPerspectiveBox({
     return () => cancelAnimationFrame(rafRef.current)
   }, [])
 
+  const wrapperStyle: CSSProperties = {
+    position: 'absolute',
+    top,
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: WIDTH + DEPTH * 2,
+    height: HEIGHT + DEPTH * 2,
+    pointerEvents: 'none',
+  }
+
+  const perspectiveContainerStyle: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    perspective: `${PERSPECTIVE}px`,
+    width: '100%',
+    height: '100%',
+  }
+
+  const cubeStyle: CSSProperties = {
+    width: WIDTH,
+    height: HEIGHT,
+    position: 'relative',
+    transformStyle: 'preserve-3d',
+    transform: `translateZ(0px)`,
+  }
+
+  const faceBaseStyle: CSSProperties = {
+    position: 'absolute',
+    boxSizing: 'border-box',
+    border: '3px solid black',
+    background: 'grey',
+  }
+
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top,
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: WIDTH + DEPTH * 2,
-        height: HEIGHT + DEPTH * 2,
-        zIndex: 1001,
-        pointerEvents: 'none',
-      }}
-    >
-      <div
-        ref={containerRef}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          perspective: `${PERSPECTIVE}px`,
-          width: '100%',
-          height: '100%',
-        }}
-      >
-        <div
-          style={{
-            width: WIDTH,
-            height: HEIGHT,
-            position: 'relative',
-            transformStyle: 'preserve-3d',
-            // transform: `translateZ(${DEPTH / 2}px)`,
-            transform: `translateZ(0px)`,
-          }}
-        >
-          {faces.map((face, i) => (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                boxSizing: 'border-box',
-                border: '3px solid black',
-                background: 'grey',
-                ...face.style,
-              }}
-            />
-          ))}
+    <>
+      {/* Sides/back layer — below ScrollPhysicsElement */}
+      <div style={{ ...wrapperStyle, zIndex: 999 }}>
+        <div ref={backContainerRef} style={perspectiveContainerStyle}>
+          <div style={cubeStyle}>
+            {faces.slice(1).map((face, i) => (
+              <div key={i} style={{ ...faceBaseStyle, ...face.style }} />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+      {/* Front face layer — above ScrollPhysicsElement */}
+      <div style={{ ...wrapperStyle, zIndex: 1001 }}>
+        <div ref={frontContainerRef} style={perspectiveContainerStyle}>
+          <div style={cubeStyle}>
+            <div style={{ ...faceBaseStyle, ...faces[0].style }} />
+          </div>
+        </div>
+      </div>
+    </>
   )
 }
 
