@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import Box from '@mui/material/Box'
 import { UnderConstruction } from '../components/UnderConstruction'
 import { ScrollPhysicsImage } from '../components/ScrollPhysicsImage'
@@ -7,6 +7,15 @@ import Typography from '@mui/material/Typography'
 export function About() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.scrollTo(0, 0)
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [])
+
   return (
     <Box
       ref={scrollContainerRef}
@@ -14,6 +23,7 @@ export function About() {
         position: 'relative',
         height: '100dvh',
         overflowY: 'auto',
+        overflowX: 'hidden',
       }}
     >
       <Box
