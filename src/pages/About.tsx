@@ -48,7 +48,7 @@ export function About() {
         numFrames={10}
         scrollContainerRef={scrollContainerRef}
         anchorUpperScrollPosition={380}
-        anchorLowerScrollPosition={6500}
+        // anchorLowerScrollPosition={7500}
         mobileOverrides={{
           accelerationSmoothingFactor: 0.18,
           velocitySmoothingFactor: 0.18,
@@ -61,7 +61,6 @@ export function About() {
           splatSeverity: 0.002,
           splatRecoverySpeed: 0.25,
           anchorUpperScrollPosition: 200,
-          anchorLowerScrollPosition: 5600,
         }}
       />
     </Box>

@@ -378,7 +378,7 @@ export class ScrollPhysicsElement {
     const maxScroll = scrollContainer
       ? scrollContainer.scrollHeight - scrollContainer.clientHeight
       : document.documentElement.scrollHeight - viewportH
-    return maxScroll - viewportH * 0.55
+    return maxScroll - viewportH * 0.2
   }
 
   private effectiveScrollTop(currentScrollTop: number): number {
