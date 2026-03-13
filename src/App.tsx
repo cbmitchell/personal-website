@@ -14,7 +14,7 @@ export function App() {
         component="main"
         sx={{
           minHeight: '100dvh',
-          pt: { xs: 0, md: 10 },
+          pt: { xs: 0, md: 8 },
           bgcolor: 'background.default',
           color: 'text.primary',
         }}
