@@ -46,12 +46,14 @@ export class SiteApiStack extends cdk.Stack {
     turnstileSecret.grantRead(contactFn)
 
     // Grant Lambda permission to send emails via SES. SES checks IAM authorization
-    // on both the sending identity and any verified recipient identities in the
-    // same account, so both must be included as resources.
+    // against the sending email identity, its parent domain identity (if both are
+    // verified in SES), and any verified recipient identities in the same account.
+    const senderDomain = senderEmail.split('@')[1]
     contactFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['ses:SendEmail'],
       resources: [
         `arn:aws:ses:${this.region}:${this.account}:identity/${senderEmail}`,
+        `arn:aws:ses:${this.region}:${this.account}:identity/${senderDomain}`,
         `arn:aws:ses:${this.region}:${this.account}:identity/${recipientEmail}`,
       ],
     }))
@@ -76,7 +78,6 @@ export class SiteApiStack extends cdk.Stack {
 
     // Analytics DynamoDB table
     const analyticsTable = new dynamodb.Table(this, 'AnalyticsEvents', {
-      tableName: 'PersonalSiteAnalytics',
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
       timeToLiveAttribute: 'ttl',
