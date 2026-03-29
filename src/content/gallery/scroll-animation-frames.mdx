@@ -12,10 +12,30 @@ order: 2
 ---
 
 These are the animation frames I created for my scroll driven animation project.
-Said project doesn't have a formal home yet, nor does it have an entry in the Projects 
-section of this site, but I plan on rectifying that in a future update.
-In the meantime, this little guy lives on the [About page](/about).
+Said project [has its own Projects entry](/projects/scroll-physics-animation), 
+so go check that out for more details on the project, as well as a live demo 
+where you can see these frames in action!
 
+# How They Were Made
+These frames were all hand-drawn by me in Procreate on my iPad.
+Procreate is severely lacking in many of the animation tooling common to other
+animation/drawing programs available these days, but it was still a great fit for 
+this particular use case.
+
+Drawing, positioning, and exporting all the frames took me about 3 hours, although the first hour of that was mostly just figuring out what I wanted the frames to look like.
+Once I had a general idea of what I wanted, I drew the neutral frame, followed by all of the body shapes for all the other frames.
+I then set to work on drawing the faces for each frame.
+
+As a rule of thumb, I tried to keep the **eyes** and the **teeth** in the same positions relative to the bounds of the image. 
+This gives the viewer a better feel for what's actually being moved around when they scroll the page. 
+The **skeleton** (or, more accurately, the skull) stays in the center of the page, while the **rest** of the green guy deforms around it in response to force.
+Without this, an extreme upward force frame would primarily be distinguishable from a downward one only by its **position within the viewport**, which is a much weaker visual indicator than the face's position within the shape.
+
+I used a fixed-width brush (i.e. the width of the line doesn't change in response to speed or pressure) to draw these.
+I generally gravitate towards fixed-width brushes when animating since they give a smoother, more consistent look.
+It also made it easier to have other elements in the physics demo which aren't hand-drawn (like the rings the little guy flies through) match the line style for stylistic consistency and cohesion.
+
+# The Frames
 There's 1 neutral frame:
 
 <img src='/images/physics_animation_frames/neutral.png' style={{ display: 'block', width: '100%', objectFit: 'contain' }} />
