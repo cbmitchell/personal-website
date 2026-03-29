@@ -78,6 +78,7 @@ export class SiteApiStack extends cdk.Stack {
 
     // Analytics DynamoDB table
     const analyticsTable = new dynamodb.Table(this, 'AnalyticsEvents', {
+      tableName: 'PersonalSiteAnalytics',
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
       timeToLiveAttribute: 'ttl',
