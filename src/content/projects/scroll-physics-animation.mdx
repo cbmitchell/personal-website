@@ -1,0 +1,73 @@
+---
+title: Scroll Physics Animation Demo
+description: A fun little scroll-driven animation with its own physics simulation engine
+image: /images/projects/scroll-physics-animation.png
+githubUrl: https://github.com/cbmitchell/scroll-physics-animation
+deploymentUrl: https://scrollphysicsdemo.chrisbeckermitchell.com
+showDemo: true
+tags:
+  - JavaScript
+  - TypeScript
+  - React
+order: 2
+---
+
+## Table of Contents
+
+# Overview
+This is a demo I set up to show off a React component I created that puts an element on the page which moves with the viewport and displays realistic physical deformation in response to the scroll movement. I'd had the idea for a long time before actually setting out to code it, and I found it to be a very satisfying and enjoyable project. Not only did it have a lot of fun math to work through, but it also let me apply that math to animation, another passion of mine. All-in-all, I think it's a nice marriage of several of my skills.
+
+This has been a fun little pet project of mine for some time, and the code for it has actually been moved around quite a bit since I first started working on it. Originally, it was just a local project with a local git repo. After that, I componentized the code and moved it over to my [Personal Website repo](https://github.com/cbmitchell/personal-website), where it then lived until I decided that it deserved its own repository, at which point I created the [scroll-physics-animation repo](https://github.com/cbmitchell/scroll-physics-animation/tree/main) to house the code.
+
+Most of the technical details about the project can be found in the [project README](https://github.com/cbmitchell/scroll-physics-animation/blob/main/README.md), but the gist is that I created a couple of React components that can be dropped into any React project and then customized. The main reason for this was so that I could use them here on this personal site (and because they were fun to make), but if others are interested in using these components, then more power to them.
+
+The live deployment not only demonstrates the components, but also provides a HUD to show the underlying physics variables, as well as a panel of controls to allow users to play around with tweaking the physics parameters. It's worth noting that the physics parameter defaults are different between mouse-enabled devices and touch-enabled devices since users interact with those slightly differently.
+# This Project's Parts
+This project can be thought of as having a few distinct parts. I'll tackle each of these separately throughout this report.
+- The animation loop
+- The physics logic
+- The 3D washers
+- The animation frames
+- The HUD & controls
+## The Animation Loop
+Check out the [lifecycle section of the code](https://github.com/cbmitchell/scroll-physics-animation/blob/043011b2035026793b64d63784805133e0cf88a5/src/lib/ScrollPhysicsElement.ts#L307-L340) to see more specifically how the animation loop lifecycle is managed, but it's nothing too complicated. Basically, there's an [`animate` function](https://github.com/cbmitchell/scroll-physics-animation/blob/043011b2035026793b64d63784805133e0cf88a5/src/lib/ScrollPhysicsElement.ts#L506-L530) which is responsible for keeping the physics animation moving. Once invoked, this function enters an **infinite loop** that [begins here](https://github.com/cbmitchell/scroll-physics-animation/blob/043011b2035026793b64d63784805133e0cf88a5/src/lib/ScrollPhysicsElement.ts#L316) and [loops here](https://github.com/cbmitchell/scroll-physics-animation/blob/043011b2035026793b64d63784805133e0cf88a5/src/lib/ScrollPhysicsElement.ts#L529). I'll refer to this loop as the "**animation loop**" or sometimes the "**RAF loop**" (since the function **R**equests **A**nimation **F**rames as its final step).
+
+The `animate` function is simply responsible for collecting some information (scroll position, time since last loop, etc.), passing it to the physics logic, and then updating the elements rendered on the page based on the physics logic's output. Then, it just calls itself again until until the associated [`destroy` function](https://github.com/cbmitchell/scroll-physics-animation/blob/043011b2035026793b64d63784805133e0cf88a5/src/lib/ScrollPhysicsElement.ts#L334-L340) is [invoked](https://github.com/cbmitchell/scroll-physics-animation/blob/043011b2035026793b64d63784805133e0cf88a5/src/hooks/useScrollPhysics.ts#L28).
+## The Physics Logic
+This composes the bulk of the project's code, and is, in my opinion, by far the most interesting part. It was certainly the most fun to work on. The math gets deep enough that covering it fully would dominate this post, so I'll focus on the basic principles here. Feel free to [dig into the code](https://github.com/cbmitchell/scroll-physics-animation/blob/main/src/lib/ScrollPhysicsElement.ts) if you want the full picture!
+
+For starters, it's important to recognize that there are a few layers to this. First, there's the physics calculations themselves. These take deltas for time and position, and then use them to calculate velocity and acceleration. After that, we use those velocity (which simulates wind resistance) & acceleration values to calculate the **net force** on the object. Finally, we determine which animation frame should be displayed using that net force combined with a few other factors: the force thresholds separating the frames, the hysteresis (or "buffer") we apply to the system, & the framerate easing speed.
+
+To see those last few mechanics I mentioned in action, just pop open the HUD in the demo and keep an eye on the `netForce` bar as you scroll the page. The red line on that bar represents the currently-displayed frame. Notice how the red bar *follows* the net force, but doesn't match it *exactly*. This is because of those additional factors, and each of them are independently adjustable via the physics controls.
+## The 3D Washers
+In the demo, you'll notice that there are rings (or "washers" as I like to call them since they're flat on the inner and outer sides) that the physics object can pass through as it scrolls up and down the page. These are a separate React component, and I'm quite proud of how they turned out. Their development actually took way longer than I expected it to when I first set out to make them, but I enjoyed the whole process, and I like the final result. I have a lot to say about those, but for the sake of brevity, I'll take a rain check on explaining how they work for now. Just know that it involves a lot of trigonometry. If that sounds interesting, feel free to [check out the code](https://github.com/cbmitchell/scroll-physics-animation/blob/main/src/components/ViewportWasher.tsx) yourself!
+## The Animation Frames
+These are the individual frames that make up the physics object. By default, it's my little round green guy. He has 41 unique, hand-drawn animation frames, and I have a [whole gallery post](/gallery/scroll-animation-frames) dedicated to showing those frames off, so head over there if you want a closer look at them!
+## The HUD & Controls
+These are the components that allow me to really show off these other parts in all their glory. They're just simple controls that allow users to adjust the various physics parameters that dictate the demo's appearance or behavior.
+
+The HUD allows users to see the physics variables live, along with some other state information from the physics object. On the `netForce` bar, there's also a red line that moves around to represent the *actual* frame being displayed, as well as the different thresholds for frames.
+# Getting Smooth, Consistent Behavior Across Many Platforms
+At first, I had a prototype of the physics component that worked great on Safari on my mac. I'd tuned all the physics parameters just right, and it was running very smoothly. However, when I tried it on *mobile* Safari, I noticed that the animation was extremely jittery and erratic. Then, when I tried it on other desktop browsers like Firefox and Chrome, the physics behavior was still smooth, but it was extremely sensitive.
+
+After some investigation, I discovered that this was due to the way I was handling the **animation loop**. Basically, at that point, I was working under the assumption that the infinite loop powering the physics engine would run at **regular intervals**, and on desktop browsers, this is *usually* the case. However, not all desktop browsers run that loop at the *same* interval. Safari ran the loop **faster** than Firefox or Chrome.
+
+So, bearing in mind that, at that point in the project, each animation loop checked the difference between the current position of the object and the position of the object in the previous loop, it makes sense that the more frequently the loop ran, the less sensitive the physics object would appear. This would need tweaking.
+
+**Mobile browsers** were an entirely different beast. At least with desktop browsers, the animation loop was running on a **consistent interval**, even if that interval varied between the browsers. But on mobile, the loop would run in fits and bursts, causing very jumpy, erratic behavior. Sometimes, the animation loop would update multiple times in a tiny fraction of a second, while other times, it would take almost an entire second to update once.
+
+These issues were challenging to address, but through iteration, and the layering on of a few different approaches to help mitigate them, I eventually got things running smoothly and consistently. Let's walk through each of the approaches I ultimately used.
+## Velocity & Acceleration Smoothing
+The first thing I tried was [applying an exponential moving average (EMA) algorithm to my readings for both velocity and acceleration](https://github.com/cbmitchell/personal-website/commit/292b4cd9bf9ca16fdabaa8ea5f50fea8a2043454#diff-e1bac73cf1191090e7093924053c5e3b1fcc48f84bdbf4bfa80f61b1557f599fL423-R441) (note that this link goes to the final version which also includes framerate-independent correction mentioned in the next section). This helped prevent either of those variables from suddenly spiking due to choppy inputs resulting from inconsistent frequency of running the animation loop. In the live demo, the smoothing factors applied to these can actually be adjusted, and the HUD gives a clear idea of how adjusting them affects the behavior of those variables.
+
+Applying this smoothing was necessary in order to get better behavior across the board, and on desktop browsers with consistent framerates, it helped smooth the object's movement out considerably. However, it wasn't enough on its own to get me to the smooth consistency I was after. Sensitivity of the physics object was still highly inconsistent between browsers with different framerates. Furthermore, the physics object was still **very** jumpy on mobile. 
+## Framerate-Independent Velocity
+Adding EMA smoothing to velocity and acceleration was a step in the right direction, but it didn't fix the inconsistent sensitivity of the physics object between browsers. To correct that, I'd need to apply logic to make the readings from the animation loop **framerate-independent**. In other words, I'd need to set things up to pay attention to changes in position **over time** *rather* than changes in position **between executions of the animation loop**.
+
+To do this, I added a [`dt` variable](https://github.com/cbmitchell/scroll-physics-animation/blob/043011b2035026793b64d63784805133e0cf88a5/src/lib/ScrollPhysicsElement.ts#L513) (short for "delta time"). This variable simply tracked the amount of time that had passed between the current and previous executions of the loop. Using this, I could standardize the physics behavior to be framerate-independent. Of course, faster framerates still mean more data points, and thus more accurate behavior, but using this approach at least meant that behavior of the physics objects on different browsers and devices with different framerates would be much, much more consistent.
+
+At first, I mistakenly only applied this framerate-independence to *some* of the physics code, but not *all* of it. Specifically, while I *was* applying framerate standardization to the calculation of velocity and acceleration, I *wasn't* applying it to the **EMA smoothing** applied to those calculations. This was causing mobile to still be jumpy and sensitive to inconsistent framerates. Long story short, I eventually noticed my mistake, and [applied the framerate standardization to the EMA smoothing as well](https://github.com/cbmitchell/personal-website/commit/292b4cd9bf9ca16fdabaa8ea5f50fea8a2043454#diff-e1bac73cf1191090e7093924053c5e3b1fcc48f84bdbf4bfa80f61b1557f599fL423-R441). As soon as I put that piece into place, mobile behavior became far, far smoother and more consistent.
+## Frame Delta Purging
+Even after successfully smoothing things out by standardizing the framerate, mobile browsers were still acting a little erratically sometimes. This was because the sudden bursts of frames or long pauses between frames were still negatively impacting behavior.
+
+To fix this, I added logic which would purge any frames that were above or below certain length thresholds. So, if a frame is too short or too long, we simply ignore it when calculating physics variables. This prevents suddent bursts of frames or long pauses between frames from causing strange behavior in the physics of the object. Such things weren't terribly common, but since making things smooth is a priority for this project, it's still worth quashing this issue. Ultimately, I settled on [purging any frames not between 0.004 & 0.1 seconds](https://github.com/cbmitchell/scroll-physics-animation/blob/043011b2035026793b64d63784805133e0cf88a5/src/lib/ScrollPhysicsElement.ts#L157-L158), and behavior on mobile became even smoother.
