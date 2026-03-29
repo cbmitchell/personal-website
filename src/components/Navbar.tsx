@@ -16,7 +16,7 @@ import { SocialLinks } from './SocialLinks'
 
 const navLinks = [
   { label: 'Home', to: '/' },
-  { label: 'About', to: '/about' },
+  // { label: 'About', to: '/about' },
   { label: 'Blog', to: '/blog' },
   { label: 'Projects', to: '/projects' },
   { label: 'Gallery', to: '/gallery' },
@@ -45,7 +45,9 @@ export function Navbar() {
                 to={link.to}
                 color="inherit"
                 sx={{
-                  borderBottom: isActive(link.to) ? '2px solid currentColor' : '2px solid transparent',
+                  borderBottom: isActive(link.to)
+                    ? '2px solid currentColor'
+                    : '2px solid transparent',
                   borderRadius: 0,
                 }}
               >
