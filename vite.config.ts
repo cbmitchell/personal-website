@@ -8,6 +8,30 @@ import remarkToc from 'remark-toc'
 import rehypeCallouts from 'rehype-callouts'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
+import { visit } from 'unist-util-visit'
+
+// Maps fenced code language → MDX component name.
+// To add a new diagram type, add an entry here and register the component in mdxMapping.tsx.
+const DIAGRAM_LANGS: Record<string, string> = {
+  mermaid: 'MermaidDiagram',
+  // plantuml: 'PlantUMLDiagram',
+}
+
+function remarkDiagrams() {
+  return (tree: any) => {
+    visit(tree, 'code', (node: any, index: any, parent: any) => {
+      const componentName = DIAGRAM_LANGS[node.lang]
+      if (componentName) {
+        parent.children[index] = {
+          type: 'mdxJsxFlowElement',
+          name: componentName,
+          attributes: [{ type: 'mdxJsxAttribute', name: 'chart', value: node.value }],
+          children: [],
+        }
+      }
+    })
+  }
+}
 
 export default defineConfig({
   plugins: [
@@ -19,6 +43,7 @@ export default defineConfig({
           [remarkMdxFrontmatter, { name: 'frontmatter' }],
           remarkGfm,
           [remarkToc, { tight: true }],
+          remarkDiagrams,
         ],
         rehypePlugins: [
           rehypeSlug,
