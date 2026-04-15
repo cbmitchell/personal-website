@@ -2,6 +2,7 @@ import ImageList from '@mui/material/ImageList'
 import ImageListItem from '@mui/material/ImageListItem'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTheme } from '@mui/material/styles'
+import { LightboxImage } from '../LightboxImage'
 
 interface GalleryImageListProps {
   images: string[]
@@ -11,6 +12,7 @@ interface GalleryImageListProps {
   gap?: number
   variant?: 'standard' | 'masonry'
   imageBackground?: string
+  lightbox?: boolean
 }
 
 export function GalleryImageList({
@@ -21,6 +23,7 @@ export function GalleryImageList({
   gap = 8,
   variant = 'standard',
   imageBackground,
+  lightbox = true,
 }: GalleryImageListProps) {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -37,14 +40,14 @@ export function GalleryImageList({
       {images.map((src) => {
         const filename = src.split('/').pop() ?? src
         const alt = filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
+        const imgStyle: React.CSSProperties = { display: 'block', width: '100%', objectFit: 'contain' }
         return (
           <ImageListItem key={src} sx={imageBackground ? { backgroundColor: imageBackground } : undefined}>
-            <img
-              src={src}
-              alt={alt}
-              loading="lazy"
-              style={{ display: 'block', width: '100%', objectFit: 'contain' }}
-            />
+            {lightbox ? (
+              <LightboxImage src={src} alt={alt} loading="lazy" style={imgStyle} />
+            ) : (
+              <img src={src} alt={alt} loading="lazy" style={imgStyle} />
+            )}
           </ImageListItem>
         )
       })}
