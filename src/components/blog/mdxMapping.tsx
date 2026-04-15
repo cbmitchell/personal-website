@@ -6,6 +6,7 @@ import type { MDXComponents } from 'mdx/types'
 import { Link as RouterLink } from 'react-router-dom'
 import { Heading } from './Heading'
 import { GalleryImageList } from '../gallery/GalleryImageList'
+import { LightboxImage } from '../LightboxImage'
 import { MermaidDiagram } from './MermaidDiagram'
 import { UnderConstruction } from '../UnderConstruction'
 
@@ -13,6 +14,7 @@ const isExternal = (href: string) => /^(?:[a-z][a-z\d+\-.]*:|\/\/)/.test(href)
 
 export const mdxComponents: MDXComponents = {
   ImageGrid: GalleryImageList,
+  LightboxImage,
   MermaidDiagram,
   UnderConstruction: UnderConstruction,
   h1: (props) => <Heading variant="h2" {...props} />,
