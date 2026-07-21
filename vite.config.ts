@@ -9,6 +9,7 @@ import rehypeCallouts from 'rehype-callouts'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
 import { visit } from 'unist-util-visit'
+import type { Code, Parent, Root } from 'mdast'
 
 // Maps fenced code language → MDX component name.
 // To add a new diagram type, add an entry here and register the component in mdxMapping.tsx.
@@ -18,9 +19,10 @@ const DIAGRAM_LANGS: Record<string, string> = {
 }
 
 function remarkDiagrams() {
-  return (tree: any) => {
-    visit(tree, 'code', (node: any, index: any, parent: any) => {
-      const componentName = DIAGRAM_LANGS[node.lang]
+  return (tree: Root) => {
+    visit(tree, 'code', (node: Code, index: number | undefined, parent: Parent | undefined) => {
+      if (index === undefined || !parent) return
+      const componentName = DIAGRAM_LANGS[node.lang ?? '']
       if (componentName) {
         parent.children[index] = {
           type: 'mdxJsxFlowElement',
